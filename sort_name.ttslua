@@ -1,0 +1,42 @@
+EXT_NAMES = {
+    { Archer, Assassinat, Changeforme, Complot, Decret_Royal,
+      Embuscade, Espion, Heritier, Seigneur, Soldat },
+    { Apothicaire, Corruption, Coupe_Jarret, Felon, Guet_apens, Intriguante,
+      Jumeau, Machination, Prince, Reine, Usurpation, Generale },
+    { Agent_Double, Arbaletrier, Croise, Fossoyeur, Infiltrateur, Joker,
+      Martyr, Paladine, Pot_de_vin, Pretre, Resurrection, Vol_a_la_tire },
+    { Deserteur, Diplomate, Extorsion, Imperatrice, Infiltration,
+      Informatrice, Insurrection, Magistrat, Negoce, Zelote }
+}
+-- Base, Embrasement, Rédemption
+
+function sort_name()
+    local decks = {
+        ["Blue"] =   {getObjectFromGUID("ec7c57"), getObjectFromGUID("9ce689"), getObjectFromGUID("d44713"), getObjectFromGUID("3c85d4")},
+        ["Green"] =  {getObjectFromGUID("fd1c68"), getObjectFromGUID("504c41"), getObjectFromGUID("83e8cb"), getObjectFromGUID("15dc13")},
+        ["Yellow"] = {getObjectFromGUID("a8bc2c"), getObjectFromGUID("273bda"), getObjectFromGUID("e33db4"), getObjectFromGUID("b2c680")},
+        ["White"] =  {getObjectFromGUID("34f9c8"), getObjectFromGUID("0d1044"), getObjectFromGUID("8d3206"), getObjectFromGUID("175e44")},
+        ["Red"] =    {getObjectFromGUID("b4ad7a"), getObjectFromGUID("03d749"), getObjectFromGUID("963801"), getObjectFromGUID("0d14f5")},
+    }
+    for color, deck in pairs(decks) do
+        for i = 1, #EXT_NAMES do
+            if deck[i] then sort_name_tag(deck[i], color, EXT_NAMES[i]) end
+        end
+    end
+end
+
+function sort_name_tag(deck, key, e)
+
+    local objets = deck.getObjects()
+
+    for i, obj in pairs(objets) do
+        local name = e[#objets-i+1].name
+        local card = deck.takeObject({index=#objets-1})
+        card.setName(name)
+        card.addTag(key)
+        card.memo = name
+        deck.putObject(card)
+        card.destruct()
+    end
+
+end

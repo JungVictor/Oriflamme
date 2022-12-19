@@ -1,0 +1,18 @@
+Pot_de_vin = {
+    name = "Pot-de-vin",
+    description = "Payez 1 PI à un joueur puis regardez une de ces cartes faces cachées.\n---- OU ----\nRécupérez 1 PI.",
+    type = TYPE_STACK
+}
+
+function Pot_de_vin.onReveal(file, idx)
+    local player = Card.getColor(file[idx])
+    local all = {}
+    for i = 1, #file do all[i] = i end
+    Effect.bribe(file, idx, all)
+end
+
+
+function Pot_de_vin.onEndTurn(f, s)
+    moveToDeathZone(Card.getColor(f[s]), f, s, true)
+    return s
+end

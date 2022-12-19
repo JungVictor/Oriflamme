@@ -1,0 +1,21 @@
+Agent_Double = {
+    isCharacter = true,
+    name = "Agent double",
+    description = "Gagnez 1 PI pour chaque famille différente adjacente.",
+    type = TYPE_OTHER
+}
+
+-- Effet d'activation de la carte
+function Agent_Double.onActivation(file, idx)
+    local neighbours = getNeighbours(file, idx)
+    local cpt = 0
+    local color = Card.getColor(file[idx])
+    local colors = { [1] = color, [2] = color }
+    for i, v in pairs(neighbours) do
+        if v > 0 then colors[i] = Card.getColor(file[v]) end
+    end
+    if colors[1] != color then cpt = cpt + 1 end
+    if colors[2] != color and colors[1] != colors[2] then cpt = cpt + 1 end
+    givePointsToPlayer(Card.getColor(file[idx]), cpt)
+    startTurn(file, Card.onEndTurn(file, idx))
+end

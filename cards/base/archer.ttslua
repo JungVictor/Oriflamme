@@ -1,0 +1,15 @@
+Archer = {
+    isCharacter = true,
+    name = "Archère",
+    description = "Éliminez la première ou la dernière carte de la File.",
+    type = TYPE_KILLER
+}
+
+-- Effet d'activation de la carte
+function Archer.onActivation(file, idx)
+    Effect.elimination(file, idx, getFirstAndLast(file))
+end
+
+function Archer.onElimination(file, source, target)
+    givePointsToPlayer(Card.getColor(file[source]), 1)
+end

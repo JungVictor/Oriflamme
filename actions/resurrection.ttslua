@@ -1,0 +1,19 @@
+function Effect.resurrect(file, source, targets)
+    local cpt = 0
+    local color = Card.getColor(file[source])
+    for i = 1, #targets do
+        local target = targets[i]
+        if Card.isCharacter(target) then
+            cpt = cpt + 1
+            target.createButton(Button.ResurrectButton(
+                effect_action("resurrect", file, source, target, targets)
+            ))
+            target.highlightOn({r = 0.95, g = 1, b = 0.3})
+        end
+    end
+    -- No one to copy
+    if cpt == 0 then
+        moveToDeathZone(Card.getColor(file[source]), file, source, false)
+        startTurn(file, source)
+    end
+end

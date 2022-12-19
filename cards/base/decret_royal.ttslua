@@ -1,0 +1,15 @@
+Decret_Royal = {
+    name = "Décret royal",
+    description = "Déplacez une carte n'importe où dans la File sauf sur une autre carte. Défaussez le Décret royal.",
+    type = TYPE_INSTANT
+}
+
+function Decret_Royal.onReveal(file, idx)
+    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
+    Effect.manual_action(file, idx)
+end
+
+function Decret_Royal.onEndTurn(f, s)
+    moveToDeathZone(Card.getColor(f[s]), f, s, true)
+    return s
+end

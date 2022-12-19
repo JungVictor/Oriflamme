@@ -1,0 +1,16 @@
+Reine = {
+    isCharacter = true,
+    name = "Reine",
+    description = "Gagnez 2 PI.\n-----------\nSi un joueur adverse élimine la Reine, il gagne 1 PI supplémentaire.",
+    type = TYPE_OTHER
+}
+
+function Reine.onActivation(file, idx)
+    local name = file[idx].getName()
+    givePointsToPlayer(Card.getColor(file[idx]), 2)
+    startTurn(file, Card.onEndTurn(file, idx))
+end
+
+function Reine.onDeath(f, s, t)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+end

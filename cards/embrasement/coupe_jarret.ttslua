@@ -1,0 +1,39 @@
+Coupe_Jarret = {
+    isCharacter = true,
+    name = "Coupe-Jarret",
+    description = "Éliminez une carte adjacente ainsi que toutes les cartes adverses révélées du même nom. Si une seule carte est éliminée, ne gagnez pas le PI de l'élimination.",
+    type = TYPE_KILLER
+}
+
+-- Effet d'activation de la carte
+function Coupe_Jarret.onActivation(file, idx)
+    Effect.elimination(file, idx, getNeighbours(file, idx))
+end
+
+function Coupe_Jarret.eliminate(f, s, t)
+    local original = f[s]
+    local next = s + 1
+    local target_name = f[t].getName()
+    local player = Card.getColor(f[s])
+    local cpt = 0
+    -- Ajoute les cartes de même nom
+    local i = #f
+    while i > 0 do
+        local card = f[i]
+        if i == t or (card.getName() == target_name and not Card.isCovered(f, i) and Card.isRevealed(f, i) and Card.getColor(card) != player) then
+            eliminate(f, s, i, -1)
+            cpt = cpt + 1
+            while s > #f do s = s - 1 end
+            while s > 0 and original != f[s] do s = s - 1 end
+            if s < 1 then break end
+        end
+        i = i - 1
+    end
+    if cpt > 1 then givePointsToPlayer(player, cpt) end
+    if s < 1 then return end
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+function Coupe_Jarret.isMultishot()
+    return true
+end

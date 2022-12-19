@@ -1,0 +1,21 @@
+-- Prompt the player which card they want to eliminate
+function Effect.corrupt(file, source, targets)
+    local color = Card.getColor(file[source])
+    local cpt = 0
+    for i = 1, #targets do
+        local target = targets[i]
+        if target > 0 and not Card.isCovered(file, target) and not Card.isCovered(file, target+1) and Card.isCharacter(file[target]) then
+            cpt = cpt + 1
+            local button = Button.CorruptButton(
+                effect_action("corrupt", file, source, target, targets)
+            )
+            button.color = color
+            file[target].createButton(button)
+            file[target].highlightOn(color)
+        end
+    end
+    -- No one
+    if cpt <= 0 then
+        startTurn(file, Card.onEndTurn(file, source))
+    end
+end

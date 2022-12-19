@@ -1,0 +1,31 @@
+-- Prompt the player which card they want to eliminate
+function Effect.elimination(file, source, targets)
+    local cpt = 0
+    for i = 1, #targets do
+        local target = targets[i]
+        if target > 0 then
+            cpt = cpt + 1
+            local pos = 0.4
+            local rot = 0
+            if not Card.isRevealed(file, target) then
+                file[target].setName("")
+                file[target].hide_when_face_down = false
+                pos = -pos
+                rot = 180
+            end
+
+            file[target].createButton(Button.EliminateButton(
+                effect_action("eliminate", file, source, target, targets), pos, rot
+            ))
+            file[target].highlightOn("Red")
+        end
+    end
+    -- No one
+    if cpt <= 0 then
+        if Card.isCharacter(file[source]) then startTurn(file, source + 1)
+        else
+            moveToDeathZone(Card.getColor(file[source]), file, source, true)
+            startTurn(file, source)
+        end
+    end
+end

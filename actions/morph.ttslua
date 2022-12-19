@@ -1,0 +1,17 @@
+-- CHANGEFORME
+
+function Effect.morph(file, source, targets)
+    local cpt = 0
+    for i = 1, #targets do
+        local target = targets[i]
+        if target > 0 and Card.isRevealed(file, target) and file[target].getName() != file[source].getName() then
+            cpt = cpt + 1
+            file[target].createButton(Button.MorphButton(
+                effect_action("morph", file, source, target, targets)
+            ))
+            file[target].highlightOn({r = 0.3, g = 0.3, b = 0.3})
+        end
+    end
+    -- No one to copy
+    if cpt == 0 then startTurn(file, source + 1) end
+end

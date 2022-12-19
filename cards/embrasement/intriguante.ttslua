@@ -1,0 +1,19 @@
+Intriguante = {
+    isCharacter = true,
+    name = "Intrigante",
+    description = "Si cette carte est adjacente à une pile de cartes, défaussez là ; sinon gagnez 2 PI.",
+    type = TYPE_OTHER
+}
+
+function Intriguante.onActivation(f, s)
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+function Intriguante.onEndTurn(f, s)
+    if Card.isCovered(f, s-1) or Card.isCovered(f, s+2) then
+        moveToDeathZone(Card.getBaseColor(f[s]), f, s, false)
+        return s
+    end
+    givePointsToPlayer(Card.getColor(f[s]), 2)
+    return s + 1
+end

@@ -1,0 +1,15 @@
+Corruption = {
+    name = "Corruption",
+    description = "Placez un jeton Corruption de votre famille sur n'importe quel personnage révélé. Ce personnage est dorénavant de votre famille.\nDéfaussez la Corruption.",
+    type = TYPE_INSTANT
+}
+
+function Corruption.onReveal(file, idx)
+    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
+    Effect.corrupt(file, idx, getAllRevealed(file, idx))
+end
+
+function Corruption.onEndTurn(f, s)
+    moveToDeathZone(Card.getColor(f[s]), f, s, true)
+    return s
+end

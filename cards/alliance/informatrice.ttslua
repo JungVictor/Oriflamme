@@ -1,0 +1,43 @@
+Informatrice = {
+    isCharacter = true,
+    name = "Informatrice",
+    description = "Gagnez autant de PI que de PI présents sur les cartes adverses face cachée adjacentes.\n---- OU ----\nÉchangez cette carte avec une carte face cachée de votre main.",
+    type = TYPE_OTHER,
+}
+
+function Informatrice.onActivation(f, s)
+    Effect.multichoice(f, s, "Activer", "Échanger")
+end
+
+function Informatrice.choice(f, s, choice)
+    if choice == 1 then return Informatrice.collect(f, s) end
+    if choice == 2 then return Informatrice.swap(f, s) end
+end
+
+-- Collect (effect1)
+function Informatrice.collect(f, s)
+    local color = Card.getColor(f[s])
+    local neighbours = getNeighbours(f, s)
+    local points = 0
+    -- Voisin gauche
+    for _, i in pairs(neighbours) do
+        if i > 0 and Card.getColor(f[i]) != color and not Card.isRevealed(f, i) then
+            points = points + #Card.getPoints(f[i])
+        end
+    end
+    givePointsToPlayer(color, points)
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+-- Swap (effect2)
+function Informatrice.swap(f, s)
+    Effect.manual_action(f, s)
+end
+
+function Informatrice.onEndTurn(f, s)
+    if Effect.aux["last_action"] == "manual" then
+        moveToHand(Card.getColor(f[s]), f, s, false)
+        return s
+    end
+    return s + 1
+end

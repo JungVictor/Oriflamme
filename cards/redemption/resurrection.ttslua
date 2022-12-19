@@ -1,0 +1,17 @@
+Resurrection = {
+    name = "Résurrection",
+    description = "Gagnez 1 PI. Échangez cette carte avec un personnage éliminé de votre famille.",
+    type = TYPE_INSTANT
+}
+
+function Resurrection.onReveal(file, idx)
+    local player = Card.getColor(file[idx])
+    giveAllPointsToPlayer(idx, player)
+    givePointsToPlayer(player, 1)
+    Effect.resurrect(file, idx, getEliminatedCards(player))
+end
+
+
+function Resurrection.onEndTurn(f, i)
+    return i
+end

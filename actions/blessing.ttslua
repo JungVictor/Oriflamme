@@ -1,0 +1,26 @@
+function Effect.bless(file, source, targets)
+    local cpt = 0
+    local tmp = {}
+    local player = Card.getColor(file[source])
+    for i = 1, #targets do
+        local target = targets[i]
+        if target > 0 and Card.getColor(file[target]) == player then
+            local pos = 0.4
+            local rot = 0
+            if not Card.isRevealed(file, target) then
+                file[target].setName("")
+                file[target].hide_when_face_down = false
+                pos = -pos
+                rot = 180
+            end
+            cpt = cpt + 1
+            local button = Button.BlessButton(
+                effect_action("bless", file, source, target, targets), pos, rot
+            )
+            file[target].createButton(button)
+            file[target].highlightOn({r = 0.95, g = 1, b = 0.3})
+        end
+    end
+    -- No one to copy
+    if cpt == 0 then startTurn(file, Card.onEndTurn(file, source)) end
+end

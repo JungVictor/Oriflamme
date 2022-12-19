@@ -1,0 +1,28 @@
+Undefined = {}
+
+function Undefined.onReveal(file, idx)
+    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
+    Undefined.onActivation(file, idx)
+end
+
+-- Effet d'activation de la carte
+function Undefined.onActivation(file, idx)
+    Effect.manual_action(file, idx)
+end
+
+-- Source est la carte à l'origine de la mort
+-- Target est cette carte
+function Undefined.onDeath(file, source, target)
+    return nil
+end
+
+function Undefined.onElimination(file, source, target)
+end
+
+function Undefined.isDeathEffect()
+    return false
+end
+
+function Undefined.onEndTurn(f, s)
+    return s+1
+end

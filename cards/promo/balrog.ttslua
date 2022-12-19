@@ -1,0 +1,27 @@
+Balrog = {
+    isCharacter = true,
+    name = "Balrog",
+    description = "Cette carte ne peut être révélée que lorsqu'elle est la cible d'une élimination. Cette carte ne peut pas être détruite.\n ------\nÉliminez une carte n'importe où dans la File.",
+    type = TYPE_KILLER
+}
+
+function Balrog.onAttack(f, s, t)
+    broadcastToAll(f[t].getName() .. " révélé !", Card.getColor(f[t]))
+    local rotation = f[t].getRotation()
+    rotation.z = 0
+    f[t].setRotationSmooth(rotation, false, true)
+    Wait.time(function() giveAllPointsToPlayer(t, Card.getColor(f[t])) end, 0.5)
+end
+
+function Balrog.condition(f, s)
+    return false
+end
+
+-- Effet d'activation de la carte
+function Balrog.onActivation(file, idx)
+    Effect.elimination(file, idx, getAllUncovered(file, idx))
+end
+
+function Balrog.onElimination(file, source, target)
+    givePointsToPlayer(Card.getColor(file[source]), 1)
+end

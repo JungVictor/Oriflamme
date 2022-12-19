@@ -1,0 +1,34 @@
+Infiltration = {
+    name = "Infiltration",
+    description = "Placez 1 PI sur chacune de vos cartes face cachée. Réservez l'Infiltration.\n[Lorsque vous éliminez une carte face cachée, gagnez 2 PI supplémentaires.]",
+    type = TYPE_INSTANT,
+}
+
+function Infiltration.onReveal(f, s)
+    local color = Card.getColor(f[s])
+    giveAllPointsToPlayer(s, color)
+    reserve(f, s)
+    Wait.time(
+        function()
+            for i, card in pairs(f) do
+                if Card.getColor(f[i]) == color and not Card.isRevealed(f, i) then
+                    stackOnCard(f[i], 1)
+                end
+            end
+            startTurn(f, s)
+        end, 0.8
+    )
+end
+
+function Infiltration.onEventElimination(f, s, t, i, this)
+    -- La carte est dans la file
+    if i > 0 then return end
+    local color = Card.getColor(this)
+    local source = Card.getColor(f[s])
+
+    -- Si ce n'est pas le joueur qui possède l'infiltration qui a éliminé la carte
+    if color != source then return end
+    -- Si la carte n'est pas face cachée
+    if Card.isRevealed(f, t) then return end
+    givePointsToPlayer(color, 2)
+end

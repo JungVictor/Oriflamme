@@ -1,0 +1,19 @@
+Assassinat = {
+    name = "Assassinat",
+    description = "Éliminez une carte n'importe où dans la FIle. Défaussez l'Assassinat.",
+    type = TYPE_INSTANT
+}
+
+function Assassinat.onReveal(file, idx)
+    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
+    Effect.elimination(file, idx, getAllUncovered(file, idx))
+end
+
+function Assassinat.onElimination(file, source, target)
+    givePointsToPlayer(Card.getColor(file[source]), 1)
+end
+
+function Assassinat.onEndTurn(f, s)
+    moveToDeathZone(Card.getColor(f[s]), f, s, true)
+    return s
+end

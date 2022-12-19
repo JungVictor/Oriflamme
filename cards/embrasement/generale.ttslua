@@ -1,0 +1,18 @@
+Generale = {
+    isCharacter = true,
+    name = "Générale",
+    description = "Gagnez 1 PI et 1 PI supplémentaire par carte de votre famille en première ou en dernière position dans la File.",
+    type = TYPE_OTHER
+}
+
+-- Effet d'activation de la carte
+function Generale.onActivation(file, idx)
+    local first_last = getFirstAndLast(file)
+    local cpt = 1
+    local color = Card.getColor(file[idx])
+    for i, v in pairs(first_last) do
+        if v > 0 and Card.getColor(file[v]) == color then cpt = cpt + 1 end
+    end
+    givePointsToPlayer(Card.getColor(file[idx]), cpt)
+    startTurn(file, Card.onEndTurn(file, idx))
+end

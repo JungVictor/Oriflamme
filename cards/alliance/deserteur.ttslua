@@ -1,0 +1,29 @@
+Deserteur = {
+    isCharacter = true,
+    name = "Courtisane",
+    description = "Éliminez une carte adjacente. Si c'est un personnage gagnez 1 PI supplémentaire. Puis, si cette carte n'est pas adjacente à un Personnage révélé, défaussez-la.",
+    type = TYPE_KILLER
+}
+
+
+-- Effet d'activation de la carte
+function Deserteur.onActivation(file, idx)
+    Effect.elimination(file, idx, getNeighbours(file, idx))
+end
+
+function Deserteur.onElimination(file, source, target)
+    if Card.isCharacter(file[target]) then
+        givePointsToPlayer(Card.getColor(file[source]), 2)
+    else
+        givePointsToPlayer(Card.getColor(file[source]), 1)
+    end
+end
+
+function Deserteur.onEndTurn(f, s)
+    local neighbours = getNeighbours(f, s)
+    for _, i in pairs(neighbours) do
+        if i > 0 and Card.isRevealed(f, i) and Card.isCharacter(f[i]) then return s + 1 end
+    end
+    moveToDeathZone(Card.getBaseColor(f[s]), f, s, false)
+    return s
+end

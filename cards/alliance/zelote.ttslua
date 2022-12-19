@@ -1,0 +1,25 @@
+Zelote = {
+    isCharacter = true,
+    name = "Oracle",
+    description = "Gagnez 1 PI. Si vous n'avez aucune autre carte révélée dans la file, gagnez 1 PI supplémentaire.",
+    type = TYPE_OTHER
+}
+
+function Zelote.onActivation(f, s)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+function Zelote.onEndTurn(f, s)
+    local alone = true
+    local color = Card.getColor(f[s])
+    for i = 1, #f do
+        if i!=s and Card.getColor(f[i]) == color and Card.isRevealed(f, i) and not Card.isCovered(f, i) then
+            alone = false
+            break
+        end
+    end
+
+    if alone then givePointsToPlayer(Card.getColor(f[s]), 1) end
+    return s + 1
+end

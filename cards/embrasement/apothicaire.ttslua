@@ -1,0 +1,15 @@
+Apothicaire = {
+    isCharacter = true,
+    name = "Apothicaire",
+    description = "Éliminez une carte adjacente à une autre carte de votre famille.",
+    type = TYPE_KILLER
+}
+
+-- Effet d'activation de la carte
+function Apothicaire.onActivation(f, i)
+    Effect.elimination(f, i, getAdjacentToColor(f, Card.getColor(f[i]), i))
+end
+
+function Apothicaire.onElimination(f, s, t)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+end

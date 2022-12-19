@@ -1,0 +1,29 @@
+Negoce = {
+    name = "Négoce",
+    description = "Réservez le Négoce en conservant les PI dessus.\n[Au début de chaque tour, si vous avez au moins une carte dans la File, gagnez autant de PI que ceux présents sur le Négoce.]",
+    type = TYPE_STACK,
+}
+
+function Negoce.onReveal(f, s)
+    reserve(f, s)
+    startTurn(f, s)
+end
+
+function Negoce.onEventEndGame(f, i, this)
+    -- La carte est dans la file
+    if i > 0 then return end
+    givePointsOnCardTo(this, Card.getColor(this))
+end
+
+function Negoce.onEventNewTurn(f, s, this)
+    -- La carte est dans la file
+    if s > 0 then return end
+
+    local color = Card.getColor(this)
+    for i, _ in pairs(f) do
+        if Card.getColor(f[i]) == color then
+            givePointsToPlayer(color, #Card.getPoints(this))
+            return
+        end
+    end
+end

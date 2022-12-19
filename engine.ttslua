@@ -1,0 +1,262 @@
+Engine = {
+    aux = {}
+}
+
+-- Prompt the player if they wants to reveal or stack on the card
+function stackOrReveal(f, i)
+    local color = Card.getColor(f[i])
+    UI.show("StackAction")
+    UI.setAttributes("StackAction", {
+        text = "Stacker",
+        visibility = color,
+        onClick = effect_action("stack", f, i)
+    })
+
+    if not Card.condition(f, i) then return end
+    UI.show("RevealAction")
+    UI.setAttributes("RevealAction", {
+        text = "Révéler",
+        visibility = color,
+        onClick = effect_action("reveal", f, i)
+    })
+end
+
+function stackOnCard(card, p)
+    local params={}
+    local xOff = {1, -1}
+    local zOff = {0, 2, -2}
+    params.position = card.getPosition()
+    params.position.x = params.position.x + xOff[math.random(#xOff)]
+    params.position.z = params.position.z + zOff[math.random(#zOff)]
+    params.position.y = params.position.y + 1
+    local point = influence_1.takeObject(params)
+    Card.addPoint(card, point)
+end
+
+--[[------------
+    MESSAGES
+--------------]]
+function to_everyone(message, color)
+    for i, player in pairs(player_colors) do
+        to_player(message, player, color or player)
+    end
+end
+
+function to_player(message, color, player)
+    UI.setAttributes("Announce"..player, {
+        text = message,
+        color = color,
+        active = true
+    })
+    -- broadcastToColor(message, player, color)
+end
+
+function to_everyone_except(message, color, player)
+    for i, p in pairs(player_colors) do
+        if player != p then
+            to_player(message, color, p)
+            -- broadcastToColor(message, player, color or player)
+        end
+    end
+end
+
+function hide_announce(player)
+    UI.setAttribute("Announce"..player, "active", false)
+end
+
+function hide_all_announce()
+    for i, player in pairs(player_colors) do hide_announce(player) end
+end
+
+
+function startTurn(f, i)
+    if Effect.aux["block"] then
+        if Effect.aux["machination"] then Effect.machination_reapply(f) end
+        return
+    end
+    -- UI.hide("CardName")
+    while Card.isCovered(f, i) do i = i + 1 end
+    Wait.time(function() nextCard(f, i) end, 1)
+end
+
+NUMBER_OF_TURN = 1
+
+-- Place une carte dans la réserve
+function reserve(f, i)
+    f[i].highlightOff()
+
+    local player = Card.getColor(f[i])
+
+    zoneFile.call("addToReserve", {card=f[i], color=player})
+    local r = getReserveTable()
+
+    Card.removeCondemnation(f[i])
+
+    local snap = getSnapPointReserve(player, #r[player])
+    local pos = snap.position
+    local rot = snap.rotation
+    if pos == nil then pos = joueur[player].zone_jeu.getPosition() end
+    f[i].setRotationSmooth(rot, false)
+    moveCardToPos(f, i, pos - f[i].getPosition())
+
+    table.remove(f, i)
+    balance_table(f, i, -1)
+end
+
+function endGame(f)
+    Event.end_game(f)
+    local first = {}
+    local max = 0
+    for value, color in pairs(player_colors) do
+        local p = #(joueur[color].points.getObjects())
+        if p > max then
+            max = p
+            first = {color}
+        else if p == max then table.insert(first, color) end end
+    end
+
+    -- Exaequo en terme de points
+    if #first > 1 then
+        local count = {}
+        -- On compte le nombre de cartes restantes dans la file pour chaque joueur
+        for _, card in pairs(f) do
+            count[Card.getColor(card)] = (count[Card.getColor(card)] or 0) + 1
+        end
+
+        max = 0
+        first_ = {}
+        for _, color in pairs(first) do
+            local p = count[color]
+            if p > max then
+                max = p
+                first_ = {color}
+            else if p == max then table.insert(first_, color) end end
+        end
+        first = first_
+    end
+
+    -- Exaequo en points et en nombre de cartes
+    local message
+    if #first > 1 then
+        message = "Vainqueurs exaequo : " .. Player[first[1]].steam_name
+        for i = 2, #first do message = message .. " & " .. Player[first[i]].steam_name end
+    else message = "Vainqueur : " .. Player[first[1]].steam_name end
+
+    broadcastToAll(message)
+end
+
+-- Start the turn for card i
+function nextCard(f, i)
+    if i > 1 and #f >= (i-1) then
+        local j = i - 1
+        while Card.isCovered(f, j) do j = j - 1 end
+        f[j].highlightOff()
+    end
+    -- Fin de la file
+    if i > #f then
+        hide_all_announce()
+        local str = "[b]• FIN DU "
+        if NUMBER_OF_TURN == 1 then str = str .. "1[sup]er[/sup]"
+        else str = str .. NUMBER_OF_TURN .. "[sup]ème[/sup]" end
+        str = str .. " TOUR •[/b]"
+        broadcastToAll(str)
+        NUMBER_OF_TURN = NUMBER_OF_TURN + 1
+        if NUMBER_OF_TURN >= 7 then endGame(f)
+        else next_player() end
+        return
+    end
+    local player = Card.getColor(f[i])
+    f[i].highlightOn(player)
+    -- UI.setAttribute("CardName", "text", f[i].getName())
+
+    if Card.isRevealed(f, i) then to_everyone(f[i].getName(), player)
+    else
+        to_player("["..f[i].getName().."]", player, player)
+        to_everyone_except("[???]", player, player)
+    end
+
+
+    --UI.show("CardName")
+
+    -- Si la carte est révélée, on l'active
+    if Card.isRevealed(f, i) then
+        Card.onActivation(f, i)
+    -- Sinon, on attends un choix de l'utilisateur
+    else
+        stackOrReveal(f, i)
+    end
+end
+
+-- Start of the turn
+function turn()
+    infiltrateurs = {}
+    local f = getFileTable()
+    local r = getReserveTable()
+    Event.new_turn(f, r)
+    startTurn(getFileTable(), 1)
+end
+
+
+-- Elimine une carte de la file
+-- Retourne le décalage à faire dans la liste pour maintenir l'ordre
+function eliminate(file, source, target, option)
+    option = option or 1
+
+    Card.onAttack(file, source, target)
+
+    if source == target then
+        moveToDeathZone(Card.getBaseColor(file[source]), file, source, false)
+        startTurn(file, source)
+        return
+    end
+
+    -- Si la carte est protégée
+    if Card.isProtected(file, target) then
+        Card.removeBlessing(file[target])
+        -- Si la carte ne fait pas de multi touche, on passe au tour d'après
+        if not Card.isMultishot(file, source) then
+            return startTurn(file, Card.onEndTurn(file, source))
+        end
+        -- Sinon, on continue le tour de la carte
+        return
+    end
+
+    local timer = 0
+
+    -- Active l'effet d'élimination
+    if Card.onElimination(file, source, target) then source = source + 1 end
+    local current = file[source]
+    local next
+    -- Si la carte a un effet de mort
+    if Card.isDeathEffect(file, target) then
+        -- onDeath renvoie le prochain s'il termine le tour
+        next = Card.onDeath(file, source, target)
+        if not next then next = Card.onEndTurn(file, source) end
+        if not next then return end
+        -- Sinon, le tour se termine sur l'action de la carte
+        if option > 0 then return startTurn(file, next) end
+    end
+
+    -- Eliminer cette carte élimine potentiellement d'autres cartes...
+    if Card.isLinked(file, target) then
+        local shifts = Card.onDeath(file, source, target)
+        source = source - shifts[1]
+        target = target - shifts[2]
+    else Card.onDeath(file, source, target) end
+
+    if not Card.isRevealed(file, target) then
+        local rotation = file[target].getRotation()
+        rotation.z = 0
+        file[target].setRotationSmooth(rotation, false, true)
+        timer = 0.8
+    end
+
+    Wait.time(
+        function()
+            moveToDeathZone(Card.getBaseColor(file[target]), file, target, source > target)
+            if source >= target then source = source - 1 end
+            if option > 0 then startTurn(file, Card.onEndTurn(file, source)) end
+        end,
+        timer
+    )
+end

@@ -1,0 +1,55 @@
+Insurrection = {
+    name = "Insurrection",
+    description = "Défaussez 1 PI présent sur cette carte pour la révéler. Éliminez les deux cartes adjacentes puis retournez cette carte face cachée.",
+    type = TYPE_INSTANT
+}
+
+function Insurrection.condition(f, i)
+    return #Card.getPoints(f[i]) >= 1
+end
+
+function Insurrection.onReveal(f, i)
+    local neighbours = getNeighbours(f, i)
+    Card.removePoints(i, 1)
+    local n1 = neighbours[1] >= 1
+    local n2 = neighbours[2] >= 1
+    if not n1 and not n2 then
+        startTurn(f, Card.onEndTurn(f, i))
+        return
+    end
+
+    local player = Card.getColor(f[i])
+
+    -- Protège la carte pour pas être détruite durant l'exécution du pouvoir
+    Effect.aux["protect"] = f[i]
+
+    if n1 and n2 then
+        eliminate(f, i, neighbours[1], -1)
+        i = i - 1
+        eliminate(f, i, neighbours[2] - 1, -1)
+    else
+        if n1 then eliminate(f, i, neighbours[1], -1) end
+        if n2 then eliminate(f, i, neighbours[2], -1) end
+    end
+
+    -- La carte doit être détruite
+    if Effect.aux["remove_protection"] == Effect.aux["protect"] then
+        moveToDeathZone(player, f, i, true)
+        startTurn(f, i)
+    else Wait.time(function() startTurn(f, Card.onEndTurn(f, i)) end, 1) end
+
+    Effect.aux["remove_protection"] = nil
+    Effect.aux["protect"] = nil
+
+end
+
+function Insurrection.onElimination(f, s, t)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+end
+
+function Insurrection.onEndTurn(f, i)
+    local rotation = f[i].getRotation()
+    rotation.z = 180
+    f[i].setRotationSmooth(rotation, false)
+    return i + 1
+end

@@ -1,0 +1,20 @@
+Felon = {
+    name = "Félon",
+    isCharacter = true,
+    description = "Chaque joueur perd 1 PI pour chaque carte de sa famille adjacente au Félon.",
+    type = TYPE_OTHER
+}
+
+function Felon.onActivation(f, s)
+    local neighbours = getNeighbours(f, s)
+    if neighbours[1] > 0 then
+        print(neighbours[1])
+        removePointsFromPlayer(Card.getColor(f[neighbours[1]]), 1)
+    end
+    if neighbours[2] > 0 then
+        print(neighbours[2])
+        removePointsFromPlayer(Card.getColor(f[neighbours[2]]), 1)
+    end
+    startTurn(f, Card.onEndTurn(f,s))
+    Effect.aux["continue"] = true
+end

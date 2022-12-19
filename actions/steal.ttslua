@@ -1,0 +1,26 @@
+-- ESPION
+
+function Effect.steal(file, source, targets)
+    local cpt = 0
+    local color = Card.getColor(file[source])
+    for i = 1, #targets do
+        local target = targets[i]
+        if target > 0 and Card.getColor(file[target]) != color and totalPointOf(Card.getColor(file[target])) > 0 then
+            local pos = 0.4
+            local rot = 0
+            if not Card.isRevealed(file, target) then
+                file[target].setName("")
+                file[target].hide_when_face_down = false
+                pos = -pos
+                rot = 180
+            end
+            cpt = cpt + 1
+            file[target].createButton(Button.StealButton(
+                effect_action("steal", file, source, target, targets), pos, rot
+            ))
+            file[target].highlightOn({r = 0.3, g = 0.3, b = 0.3})
+        end
+    end
+    -- No one to copy
+    if cpt == 0 then startTurn(file, source + 1) end
+end

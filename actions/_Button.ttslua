@@ -1,0 +1,101 @@
+Button = {
+    COLOR_SELECT = color(0.4, 0.4, 0.4, 0.8),
+    COLOR_ELIMINATE = color(1, 0, 0, 0.8),
+    COLOR_CONDEMN = color(0.3, 0.3, 0.3, 0.8),
+    COLOR_STEAL = color(0.3, 0.3, 0.3, 0.8),
+    COLOR_ALLY = color(0.3, 0.3, 0.3, 0.8),
+    COLOR_MORPH = color(0.3, 0.3, 0.3, 0.8),
+    COLOR_BRIBE = color(1, 1, 1, 0.8),
+    COLOR_COLLECT = color(0.5, 1, 0.5, 0.8),
+    COLOR_ACTIVATE = color(0.2, 0.2, 0.8, 0.8),
+    COLOR_BLESS = color(0.95, 1, 0.3, 0.8),
+}
+
+function Button.CardButton(text, func, pos, rot)
+    pos = pos or 0.4
+    rot = rot or 0
+    return {
+        label = text,
+        click_function = func,
+        function_owner = Global,
+        position = {0.0, pos, 0.0},
+        rotation = {0,0, rot},
+        width = 1100,
+        height = 1500,
+        font_color = "White"
+    }
+end
+
+function Button.SelectButton(func, pos, rot)
+    local params = Button.CardButton("Selectionner", func, pos, rot)
+    params.color = Button.COLOR_SELECT
+    return params
+end
+
+function Button.AllyButton(func, pos, rot)
+    local params = Button.CardButton("Soudoyer", func, pos, rot)
+    params.color = Button.COLOR_ALLY
+    return params
+end
+
+function Button.StealButton(func, pos, rot)
+    local params = Button.CardButton("Voler", func, pos, rot)
+    params.color = Button.COLOR_STEAL
+    return params
+end
+
+function Button.SnatchButton(func, pos, rot)
+    return Button.StealButton(func, pos, rot)
+end
+
+function Button.MorphButton(func, pos, rot)
+    local params = Button.CardButton("Copier", func, pos, rot)
+    params.color = Button.COLOR_MORPH
+    return params
+end
+
+function Button.BribeButton(func, pos, rot)
+    local params = Button.CardButton("Soudoyer", func, pos, rot)
+    params.color = Button.COLOR_BRIBE
+    return params
+end
+
+function Button.CollectButton(func, pos, rot)
+    local params = Button.CardButton("Récupérer", func, pos, rot)
+    params.color = Button.COLOR_COLLECT
+    return params
+end
+
+function Button.CorruptButton(func, pot, rot)
+    return Button.CardButton("Corrompre", func, pos, rot)
+end
+
+function Button.ActivateButton(func, pos, rot)
+    local params = Button.CardButton("Activer", func, pos, rot)
+    params.color = Button.COLOR_ACTIVATE
+    return params
+end
+
+function Button.EliminateButton(func, pos, rot)
+    local params = Button.CardButton("Éliminer", func, pos, rot)
+    params.color = Button.COLOR_ELIMINATE
+    return params
+end
+
+function Button.CondemnButton(func, pos, rot)
+    local params = Button.CardButton("Condamner", func, pos, rot)
+    params.color = Button.COLOR_CONDEMN
+    return params
+end
+
+function Button.ResurrectButton(func, pos, rot)
+    local params = Button.CardButton("Ressusciter", func, pos, rot)
+    params.color = Button.COLOR_BLESS
+    return params
+end
+
+function Button.BlessButton(func, pos, rot)
+    local params = Button.CardButton("Protéger", func, pos, rot)
+    params.color = Button.COLOR_BLESS
+    return params
+end

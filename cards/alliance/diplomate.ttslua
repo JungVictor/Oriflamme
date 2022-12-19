@@ -1,0 +1,38 @@
+Diplomate = {
+    isCharacter = true,
+    name = "Diplomate",
+    description = "Gagnez 1 PI. Placez 2 PI sur un autre Diplomate révélé.\n---- OU ----\nGagnez tous les PI présents sur cette carte et défaussez-la.",
+    type = TYPE_OTHER
+}
+
+
+function Diplomate.onActivation(f, s)
+    Effect.multichoice(f, s, "Activer", "Récupérer")
+end
+
+function Diplomate.choice(f, s, choice)
+    if choice == 1 then return Diplomate.stack(f, s) end
+    if choice == 2 then return Diplomate.collect(f, s) end
+end
+
+-- Gagnez tous les PI présents sur cette carte et défaussez-la.
+function Diplomate.collect(f, s)
+    Effect.aux["last_effect"] = "collect_all"
+    local player = Card.getColor(f[s])
+    giveAllPointsToPlayer(s, player)
+    moveToDeathZone(Card.getBaseColor(f[s]), f, s, false)
+    startTurn(f, s)
+end
+
+-- Gagnez 1 PI. Placez 2 PI sur un autre Diplomate révélé.
+function Diplomate.stack(f, s)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+    local ts = {}
+    for t, card in pairs(f) do
+        if t != s and card.getName() == Diplomate.name and Card.isRevealed(f, t) and not Card.isCovered(f, t) then
+            table.insert(ts, t)
+        end
+    end
+    if #ts > 0 then Effect.stack_on(f, s, ts, 2)
+    else startTurn(f, Card.onEndTurn(f, s)) end
+end

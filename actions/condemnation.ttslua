@@ -1,0 +1,20 @@
+function Effect.condemnation(file, source, targets)
+    for i = 1, #targets do
+        local target = targets[i]
+        if target > 0 then
+            local pos = 0.4
+            local rot = 0
+            if not Card.isRevealed(file, target) then
+                file[target].setName("")
+                file[target].hide_when_face_down = false
+                pos = -0.4
+                rot = 180
+            end
+
+            file[target].createButton(Button.CondemnButton(
+                effect_action("condemn", file, source, target, targets), pos, rot
+            ))
+            file[target].highlightOn("Red")
+        end
+    end
+end

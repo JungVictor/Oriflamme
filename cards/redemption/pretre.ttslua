@@ -1,0 +1,16 @@
+Pretre = {
+    isCharacter = true,
+    name = "Prêtre",
+    description = "Placez un jeton Bénédiction sur une carte de votre famille.",
+    type = TYPE_OTHER
+}
+
+function Pretre.onReveal(file, idx)
+    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
+    Effect.bless(file, idx, getAllUncovered(file, idx))
+end
+
+-- Effet d'activation de la carte
+function Pretre.onActivation(file, idx)
+    startTurn(file, Card.onEndTurn(file, idx))
+end

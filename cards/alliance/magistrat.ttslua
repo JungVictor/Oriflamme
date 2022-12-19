@@ -1,0 +1,30 @@
+Magistrat = {
+    isCharacter = true,
+    name = "Bourreau",
+    description = "Gagnez 1 PI. Placez un jeton Condamnation sur une carte n'importe où dans la File.\n---- OU ----\nÉliminez une carte avec un jeton Condamnation.",
+    type = TYPE_KILLER
+}
+
+function Magistrat.onActivation(f, s)
+    local kill = {}
+    local condemn = {}
+    for i, card in pairs(f) do
+        if not Card.isCovered(f, i) then
+            if Card.isCondemned(f, i) then table.insert(kill, i)
+            else table.insert(condemn, i) end
+        end
+    end
+    if #kill > 0 then Effect.elimination(f, s, kill) end
+    Effect.condemnation(f, s, condemn)
+end
+
+function Magistrat.onElimination(f, s, t)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+end
+
+function Magistrat.onEndTurn(f, s)
+    if Effect.aux["last_action"] == "condemn" then
+        givePointsToPlayer(Card.getColor(f[s]), 1)
+    end
+    return s + 1
+end

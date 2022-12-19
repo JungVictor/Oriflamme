@@ -1,0 +1,240 @@
+TYPE_STACK = 1
+TYPE_ONDEATH = 2
+TYPE_INSTANT = 3
+TYPE_KILLER = 4
+TYPE_OTHER = 5
+
+#include cards/_all
+
+Card = {}
+Corrupted = {}
+
+-- Get the script corresponding to the given card name
+function Card.getScript(name)
+    if NAME_TO_SCRIPT[name] != nil then
+        return NAME_TO_SCRIPT[name]
+    end
+    return Undefined
+end
+
+--[[---------------
+      GETTERS
+-----------------]]
+
+function Card.isCondemned(f, i)
+    return zoneFile.call("isCondemned", {card=f[i]})
+end
+
+function Card.isReserved(card)
+    return zoneFile.call("isReserved", {card=card, color=Card.getColor(card)})
+end
+
+function Card.isMultishot(f, i)
+    local card = Card.getScript(f[i].getName())
+    if not card.isMultishot then return false end
+    return card.isMultishot()
+end
+
+-- Condition pour révéler la carte (insurrection)
+function Card.condition(f, i)
+    local card = Card.getScript(f[i].getName())
+    if not card.condition then return true end
+    return card.condition(f, i)
+end
+
+function Card.getPoints(card)
+    return zoneFile.call("pointsOnCard", {card=card})
+end
+
+-- Retourne la couleur d'une carte
+function Card.getColor(card)
+    return card.getTags()[1]
+end
+
+function Card.getBaseColor(card)
+    if Corrupted[card] then return Corrupted[card] end
+    return Card.getColor(card)
+end
+
+function Card.isToken(card)
+    local card = Card.getScript(card.getName())
+    if not card.isToken then return false end
+    return card.isToken
+end
+
+-- True si la carte est révélée, false sinon
+function Card.isRevealed(f, i)
+    return f[i].getRotation().z < 90 or f[i].getRotation().z > 270
+end
+
+function Card.isCovered(f, i)
+    if i <= 1 or i > #f then return false end
+    return math.abs(f[i].getPosition().x - f[i-1].getPosition().x) < 1.0
+end
+
+function Card.isCharacter(c)
+    local card = Card.getScript(c.getName())
+    if not card.isCharacter then return false end
+    return card.isCharacter
+end
+
+function Card.isLinked(f, i)
+    local card = Card.getScript(f[i].getName())
+    if not card.isLinked then return false end
+    return card.isLinked
+end
+
+function Card.isDeathEffect(f, s)
+    local card = Card.getScript(f[s].getName())
+    if not card.isMorphling then else card = Card.getScript(f[s].memo) end
+
+    if not card.isDeathEffect then return false end
+    return card.isDeathEffect()
+end
+
+function Card.isProtected(f, s)
+    if Effect.aux["protect"] == f[s] then return true end
+    if f[s].getName() == Balrog.name then return true end
+    if f[s].getName() == Paladine.name and Card.isRevealed(f, s) then
+        for i, v in pairs(f) do
+            if i != s and Card.getColor(v) == Card.getColor(f[s]) and Card.isRevealed(f, i) then
+                return true
+            end
+        end
+    end
+    return zoneFile.call("hasBlessing", {card=f[s]})
+end
+
+--[[---------------
+      SETTERS
+-----------------]]
+
+function Card.removeCondemnation(card)
+    zoneFile.call("removeCondemnation", {card=card})
+end
+
+function Card.restoreColor(card)
+    if Corrupted[card] then
+        local corr_color = Card.getColor(card)
+        Card.setColor(card, Corrupted[card])
+        Corrupted[card] = nil
+        restoreCorruption(corr_color)
+    end
+end
+
+function Card.stack(card, p)
+    local params={}
+    local xOff = {1, -1}
+    local zOff = {0, 2, -2}
+    while p > 0 do
+        params.position = card.getPosition()
+        params.position.x = params.position.x + xOff[math.random(#xOff)]
+        params.position.z = params.position.z + zOff[math.random(#zOff)]
+        params.position.y = params.position.y + 1
+        local point = influence_1.takeObject(params)
+        Card.addPoint(card, point)
+        p = p - 1
+    end
+end
+
+function Card.addPoint(card, point)
+    zoneFile.call("addPointToCard", {card=card, point=point})
+end
+
+function Card.removePoints(i, n)
+    if not n then return zoneFile.call("removeAllPoints", {i=i}) end
+    return zoneFile.call("removePoints", {i=i, n=n})
+end
+
+function Card.addBlessing(card)
+    zoneFile.call("addBlessingTo", {card=card})
+end
+
+function Card.removeBlessing(card)
+    Effect.aux["remove_protection"] = card
+    zoneFile.call("removeBlessing", {card=card})
+end
+
+
+-- Retourne la couleur d'une carte
+function Card.setColor(card, color)
+    Corrupted[card] = Card.getColor(card)
+    card.removeTag(Card.getColor(card))
+    card.addTag(color)
+end
+
+--[[---------------
+      ACTIONS
+-----------------]]
+
+-- s est l'attaquant, t est la carte
+function Card.onAttack(f, s, t)
+    local card = Card.getScript(f[t].getName())
+    if card.onAttack then card.onAttack(f, s, t) end
+end
+
+function Card.choice(f, s, i)
+    local card = Card.getScript(f[s].getName())
+    card.choice(f, s, i)
+end
+
+function Card.eliminate(f, s, t, n)
+    local card = Card.getScript(f[s].getName())
+    if not card.eliminate then eliminate(f, s, t, n)
+    else card.eliminate(f, s, t) end
+end
+
+function Card.corrupt(f, s, t)
+    local color = Card.getColor(f[s])
+    local corr = getCorruption(color)
+    local pos = f[t].getPosition()
+    pos.y = pos.y + 0.4
+    pos.z = pos.z + 3
+    corr.setPositionSmooth(pos, false, true)
+    Card.setColor(f[t], color)
+end
+
+function Card.condemn(f, t)
+    zoneFile.call("addCondemnationTo", {card=f[t]})
+end
+
+function Card.onReveal(f, s)
+    local card = Card.getScript(f[s].getName())
+    if not card.onReveal then
+        giveAllPointsToPlayer(s, Card.getColor(f[s]))
+        Card.onActivation(f, s)
+    else
+        card.onReveal(f, s)
+    end
+end
+
+function Card.onActivation(f, s)
+    local card = Card.getScript(f[s].getName())
+    if not card.onActivation then else
+        Card.getScript(f[s].getName()).onActivation(f, s)
+    end
+end
+
+function Card.onMorph(f, s, t)
+    f[s].memo = f[t].getName()
+    Card.getScript(f[t].getName()).onActivation(f, s)
+end
+
+function Card.onDeath(f, s, t)
+    local card = Card.getScript(f[t].getName())
+    if not card.onDeath then return Undefined.onDeath(f, s, t) end
+    return card.onDeath(f, s, t)
+end
+
+function Card.onElimination(f, s, t)
+    Event.elimination(f, s, t, getReserveTable())
+    local card = Card.getScript(f[s].getName())
+    if not card.onElimination then return Undefined.onElimination(f, s, t)
+    else return card.onElimination(f, s, t) end
+end
+
+function Card.onEndTurn(f, s)
+    local card = Card.getScript(f[s].getName())
+    if not card.onEndTurn then return s + 1 end
+    return card.onEndTurn(f, s)
+end

@@ -1,0 +1,15 @@
+Arbaletrier = {
+    isCharacter = true,
+    name = "Arbalétrier",
+    description = "Éliminez une carte située à une distance de 2.",
+    type = TYPE_KILLER
+}
+
+-- Effet d'activation de la carte
+function Arbaletrier.onActivation(file, idx)
+    Effect.elimination(file, idx, getNeighboursN(file, idx, 2))
+end
+
+function Arbaletrier.onElimination(file, source, target)
+    givePointsToPlayer(Card.getColor(file[source]), 1)
+end

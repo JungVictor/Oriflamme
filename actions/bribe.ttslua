@@ -1,0 +1,45 @@
+-- Récupérer les jetons
+function Effect.collect(f, i, ts)
+    f[i].createButton(Button.CollectButton(
+        effect_action("collect", f, i, nil, ts)
+    ))
+end
+
+function Effect.collect_all(f, s, ts)
+    local cpt = 0
+    local color = Card.getColor(f[s])
+    for i = 1, #ts do
+        local target = ts[i]
+        local pos = 0.4
+        local rot = 0
+        if not Card.isRevealed(f, target) then
+            pos = -0.4
+            rot = 180
+            f[target].setName("")
+            f[target].hide_when_face_down = false
+        end
+        cpt = cpt + 1
+        f[target].createButton(Button.CollectButton(
+            effect_action("collect_all", f, s, target, ts), pos, rot
+        ))
+        f[target].highlightOn({r = 0.8, g = 0.8, b = 0.8})
+    end
+    return cpt
+end
+
+-- Payer un joueur
+function Effect.bribe(f, s, ts)
+    local color = Card.getColor(f[s])
+    for i = 1, #ts do
+        local target = ts[i]
+        if Card.getColor(f[target]) != color and not Card.isRevealed(f, target) then
+            f[target].setName("")
+            f[target].hide_when_face_down = false
+            f[target].createButton(Button.BribeButton(
+                effect_action("bribe", f, s, target, ts), -0.4, 180
+            ))
+            f[target].highlightOn({r = 0.8, g = 0.8, b = 0.8})
+        end
+    end
+    Effect.collect(f, s, ts)
+end

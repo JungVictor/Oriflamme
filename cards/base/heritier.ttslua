@@ -1,0 +1,19 @@
+Heritier = {
+    isCharacter = true,
+    name = "Héritier",
+    description = "S'il n'y a pas d'autre carte révélée du même nom, gagnez 2 PI.",
+    type = TYPE_OTHER
+}
+
+-- Effet d'activation de la carte
+function Heritier.onActivation(file, idx)
+    local name = file[idx].getName()
+    for i, v in pairs(file) do
+        if i != idx and Card.isRevealed(file, i) and file[i].getName() == name then
+            startTurn(file, Card.onEndTurn(file, idx))
+            return
+        end
+    end
+    givePointsToPlayer(Card.getColor(file[idx]), 2)
+    startTurn(file, Card.onEndTurn(file, idx))
+end

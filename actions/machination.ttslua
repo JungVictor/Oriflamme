@@ -1,0 +1,32 @@
+
+function Effect.machination(f, s, ts)
+    local points = Card.getPoints(f[s])
+    if not points or #points == 0 then
+        Effect.aux["shift"] = 0
+        Effect.aux["machination"] = nil
+        Effect.aux["block"] = false
+        startTurn(f, Card.onEndTurn(f, s))
+        return
+    end
+
+    local cpt = 0
+    local color = Card.getColor(f[s])
+    local bind = {}
+    for i = 1, #ts do
+        local target = ts[i]
+        if i != s and Card.getColor(f[target]) == color and Card.isRevealed(f, target) then
+            cpt = cpt + 1
+            bind[target] = f[target]
+            f[target].createButton(Button.ActivateButton(
+                effect_action("activate", f, s, target, ts, bind), 0.4, 0
+            ))
+            f[target].highlightOn({r = 0.2, g = 0.2, b = 0.8})
+        end
+    end
+    Effect.collect(f, s, ts)
+    Effect.aux["shift"] = 0
+end
+
+function Effect.machination_reapply(f)
+    Machination.effect(f, Effect.aux["machination"])
+end

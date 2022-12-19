@@ -1,0 +1,15 @@
+Croise = {
+    isCharacter = true,
+    name = "Croisé",
+    description = "Gagnez 1 PI. Si un jeton Bénédiction est en jeu, gagnez 2 PI supplémentaires.",
+    type = TYPE_OTHER
+}
+
+-- Effet d'activation de la carte
+function Croise.onActivation(file, idx)
+    local cpt = 1
+    local player = Card.getColor(file[idx])
+    if isBlessingInGame(player) then cpt = cpt + 2 end
+    givePointsToPlayer(player, cpt)
+    startTurn(file, Card.onEndTurn(file, idx))
+end

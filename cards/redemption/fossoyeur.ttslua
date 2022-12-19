@@ -1,0 +1,19 @@
+Fossoyeur = {
+    isCharacter = true,
+    name = "Fossoyeur",
+    description = "Lorsqu'une carte est éliminée, placez 1 PI sur le Fossoyeur. Récupérez les PI présents sur le Fossoyeur.",
+    type = TYPE_OTHER
+}
+
+-- Effet d'activation de la carte
+function Fossoyeur.onActivation(file, idx)
+    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
+    startTurn(file, Card.onEndTurn(file, idx))
+    -- Nothing
+end
+
+function Fossoyeur.onEventElimination(f, s, t, i)
+    if not Card.isRevealed(f, i) then return end
+    local this = f[i]
+    Wait.time(function() stackOnCard(this, 1) end, 0.5)
+end

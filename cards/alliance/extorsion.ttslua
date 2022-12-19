@@ -1,0 +1,30 @@
+Extorsion = {
+    name = "Extorsion",
+    description = "Défaussez les PI présents sur l'Extorsion et gagnez 1 PI. Défaussez l'Extorsion.\n---- OU ----\nSi l'Extorsion est éliminée par une carte adverse, gagnez 2 PI par carte de ce joueur dans la File, puis ce dernier défausse 1 PI sur chacune de ses cartes face cachées.",
+    type = TYPE_ONDEATH
+}
+
+function Extorsion.onReveal(file, idx)
+    Card.removePoints(idx)
+    local player = Card.getColor(file[idx])
+    givePointsToPlayer(player, 1)
+    moveToDeathZone(player, file, idx, true)
+    startTurn(file, idx)
+end
+
+-- Source est la carte à l'origine de la mort
+-- Target est cette carte
+function Extorsion.onDeath(f, s, t)
+    local player = Card.getColor(f[t])
+    local source = Card.getColor(f[s])
+    -- La carte n'a pas été éliminée par une carte adverse
+    if source == player then return end
+    local points = 0
+    for i, card in pairs(f) do
+        if Card.getColor(f[i]) == source then
+            points = points + 2
+            if not Card.isRevealed(f, i) then Card.removePoints(i, 1) end
+        end
+    end
+    givePointsToPlayer(player, points)
+end

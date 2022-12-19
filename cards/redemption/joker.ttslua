@@ -1,0 +1,15 @@
+Joker = {
+    name = "Joker",
+    description = "Lorsque le Joker est révélé, choisissez une carte parmi trois cartes aléatoires de votre famille écartées du jeu. Placez une carte de votre main face cachée à côté du Joker, puis défaussez le Joker.",
+    type = TYPE_INSTANT
+}
+
+function Joker.onReveal(file, idx)
+    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
+    Effect.manual_action(file, idx)
+end
+
+function Joker.onEndTurn(f, s)
+    moveToDeathZone(Card.getColor(f[s]), f, s, true)
+    return s
+end

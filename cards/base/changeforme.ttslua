@@ -1,0 +1,58 @@
+Changeforme = {
+    isCharacter = true,
+    isMorphling = true,
+    name = "Changeforme",
+    description = "Copiez la capacité d'un personnage révélé adjacent.",
+    type = TYPE_OTHER
+}
+
+-- Effet d'activation de la carte
+function Changeforme.onActivation(file, idx)
+    Effect.morph(file, idx, getNeighbours(file, idx))
+end
+
+function Changeforme.onDeath(f, s, t)
+    local morph = Changeforme.morph(f, t)
+    if not morph.onDeath then
+        f[t].memo = f[t].getName()
+        return Undefined.onDeath(f, s, t) end
+    local res = morph.onDeath(f, s, t)
+    f[t].memo = f[t].getName()
+    return res
+end
+
+function Changeforme.choice(f, s, i)
+    Changeforme.morph(f, s).choice(f, s, i)
+end
+
+function Changeforme.eliminate(f, s, t)
+    local morph = Changeforme.morph(f, s)
+    if not morph.eliminate then eliminate(f, s, t, 1)
+    else morph.eliminate(f, s, t) end
+end
+
+function Changeforme.onElimination(f, s, t)
+    local morph = Changeforme.morph(f, s)
+    if not morph.onElimination then Undefined.onElimination(f, s, t)
+    else morph.onElimination(f, s, t) end
+end
+
+function Changeforme.isMultishot(f, s)
+    local morph = Changeforme.morph(f, s)
+    if not morph.isMultishot then return false end
+    return morph.isMultishot(f, s)
+end
+
+function Changeforme.onEndTurn(f, s)
+    local morph = Changeforme.morph(f, s)
+    local next
+    if not morph.onEndTurn then next = s + 1
+    else next = Changeforme.morph(f,s).onEndTurn(f, s) end
+    f[s].memo = f[s].getName()
+    return next
+end
+
+function Changeforme.morph(f, s)
+    if s > #f or s < 1 or f[s].memo == f[s].getName() then return Undefined end
+    return Card.getScript(f[s].memo) or Undefined
+end

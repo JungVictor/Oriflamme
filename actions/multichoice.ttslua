@@ -1,0 +1,22 @@
+function Effect.multichoice(f, i, effect1, effect2)
+    local color = Card.getColor(f[i])
+
+    UI.show("StackAction")
+    UI.setAttributes("StackAction", {
+        text = effect2,
+        visibility = color,
+        onClick = effect_action("multichoice", f, i, 2)
+    })
+
+    UI.show("RevealAction")
+    UI.setAttributes("RevealAction", {
+        text = effect1,
+        visibility = color,
+        onClick = effect_action("multichoice", f, i, 1)
+    })
+end
+
+function Effect.hide_multichoice()
+    UI.hide("StackAction")
+    UI.hide("RevealAction")
+end

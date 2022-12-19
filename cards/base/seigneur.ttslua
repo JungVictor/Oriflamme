@@ -1,0 +1,18 @@
+Seigneur = {
+    isCharacter = true,
+    name = "Seigneur",
+    description = "Gagnez 1 PI et 1 PI supplémentaire par carte adjacente de votre famille.",
+    type = TYPE_OTHER
+}
+
+-- Effet d'activation de la carte
+function Seigneur.onActivation(file, idx)
+    local neighbours = getAllNeighbours(file, idx)
+    local cpt = 1
+    local color = Card.getColor(file[idx])
+    for i, v in pairs(neighbours) do
+        if v > 0 and Card.getColor(file[v]) == color then cpt = cpt + 1 end
+    end
+    givePointsToPlayer(Card.getColor(file[idx]), cpt)
+    startTurn(file, Card.onEndTurn(file, idx))
+end

@@ -1,0 +1,221 @@
+#include utils
+#include actions/_actions
+
+EliminatedCards = {
+    ["White"] = {},
+    ["Red"] = {},
+    ["Blue"] = {},
+    ["Yellow"] = {},
+    ["Green"] = {}
+}
+
+EXT = {
+    { Archer, Assassinat, Changeforme, Complot, Decret_Royal,
+      Embuscade, Espion, Heritier, Seigneur, Soldat },
+    { Apothicaire, Corruption, Coupe_Jarret, Guet_apens, Machination,
+      Prince, Usurpation, Reine, Felon, Intriguante, Generale },
+    { Agent_Double, Croise, Fossoyeur, Infiltrateur, Joker, Arbaletrier,
+      Martyr, Pot_de_vin, Pretre, Resurrection, Vol_a_la_tire,
+      Paladine },
+    { Deserteur, Diplomate, Extorsion, Imperatrice, Infiltration,
+      Informatrice, Insurrection, Magistrat, Negoce, Zelote }
+}
+
+TOKENS = { Jumeau }
+
+NAME_TO_SCRIPT = {}
+ACCEPTED = {}
+
+-- #include sort_name
+function onLoad_init()
+
+    -- Place le décors (la chambre)
+    local room = getObjectFromGUID("bca721")
+    room.setPosition(vector(0, -35.780262, 29.028465))
+    room.setRotation(vector(0, 0, 0))
+    room.interactable = false
+
+    -- sort_name() -- <- Pour initialiser les cartes avec leur nom
+    REF = {getObjectFromGUID("f531bb"), getObjectFromGUID("d790ea"), getObjectFromGUID("fb074b"), getObjectFromGUID("be4b9c")}
+    local default_value = {false, false, false, true}
+    for e = 1, #EXT do
+        ACCEPTED[e] = {}
+        for i = 0, #EXT[e]-1 do
+            ACCEPTED[e][i+1] = default_value[e]
+            if REF[e] then
+            REF[e].createButton(_create_toggle(EXT[e][i+1], i+1, i % 3,  math.floor(i / 3), REF, e, default_value[e]))
+            end
+        end
+    end
+    for key, value in pairs(joueur) do
+        local params = {}
+        params.position = joueur[key].corruption.getPosition()
+        params.rotation = joueur[key].corruption.getRotation()
+        joueur[key].corruption_pos = params
+    end
+end
+
+function effect_togglecard(card, name, i, ref, e)
+    ACCEPTED[e][i] = not ACCEPTED[e][i]
+    local color = "Green"
+    if not ACCEPTED[e][i] then color = "Red" end
+    ref[e].editButton({index = i-1, color = color})
+end
+
+function _create_toggle(card, i, x, y, ref, e, val)
+    local color = "Green"
+    if not val then color = "Red" end
+    return {
+        label = card.name,
+        click_function = effect_action("togglecard", card, card.name, i, ref, e),
+        function_owner = Global,
+        position = {-5 + x*5, 0.6, -5 + y*3},
+        tooltip = card.description,
+        rotation = {0, 0},
+        width = 1800,
+        height = 800,
+        font_size = 300,
+        font_color = "White",
+        color = color
+    }
+end
+
+--[[---------------
+    DISTRIBUTION
+-----------------]]
+
+function generatePiles()
+    local piles = { {}, {}, {}, {}, {} }
+    for e = 1, #EXT do
+        for i, card in pairs(EXT[e]) do
+            if ACCEPTED[e][i] then
+                table.insert(piles[card.type], card)
+            end
+        end
+        if REF[e] then REF[e].destruct() end
+    end
+    return piles
+end
+
+function initHUD()
+    UI.hide("CardName")
+    MOVE_CARDS_TO_RIGHT = vector(4.04, 0, 0)
+    MOVE_CARDS_TO_LEFT = vector(-4.04, 0, 0)
+end
+
+function generateDeck(piles)
+    EXEMPLAIRES = {1,1,2,2,4}
+    filtered = {}
+    for i, cards in pairs(piles) do
+        local j = 1
+        picked = {}
+        while j <= EXEMPLAIRES[i] do
+            local random = math.random(#cards)
+            if random > 0 then
+                local card = cards[random]
+                table.insert(filtered, card.name)
+                table.insert(picked, card)
+                table.remove(cards, random)
+            end
+            j = j + 1
+        end
+        for _, card in pairs(picked) do table.insert(cards, card) end
+    end
+
+
+    -- Si le croisé est présent sans jeton bénédiction
+    local croise = false
+    local bless = false
+
+    for i, name in pairs(filtered) do
+        if name == Croise.name then croise = true end
+        if name == Paladine.name or name == Pretre.name then bless = true end
+    end
+
+    if croise and not bless then
+        local rand = math.random(0,1)
+        if rand == 0 then table.insert(filtered, Paladine.name)
+        else table.insert(filtered, Pretre.name) end
+    end
+
+    return filtered
+end
+
+function distribution(joueur, player_colors)
+    local piles = generatePiles()
+    local ACCEPTED_CARDS = generateDeck(piles)
+    local tokens = {}
+    for value, key in pairs(player_colors) do
+        tokens[key] = {}
+        local deck = joueur[key].deck
+        local objets = deck.getObjects()
+        local destructed = 0
+        for i, obj in pairs(objets) do
+            local card = deck.takeObject({index=#objets-destructed-1})
+
+            if has_value(ACCEPTED_CARDS, card.getName()) then deck.putObject(card)
+            else destructed = destructed + 1 end
+            if Card.getScript(card.getName()).isToken then
+                table.insert(tokens[key], card)
+            else card.destruct() end
+        end
+    end
+
+    -- distribuer les cartes cachées
+    for key, color in pairs(player_colors) do
+        joueur[color].deck.shuffle()
+        joueur[color].deck.deal(7,color)
+        influence_1.takeObject(getPointsPosition(color))
+        for _, token in pairs(tokens[color]) do
+            joueur[color].deck.putObject(token)
+            token.destruct()
+        end
+        -- joueur[color].deck.destroy()
+    end
+end
+
+function initDeal(joueur, player_colors)
+    for e = 1, #EXT do
+        for _, card in pairs(EXT[e]) do
+            NAME_TO_SCRIPT[card.name] = card
+        end
+    end
+    for _, card in pairs(TOKENS) do
+        NAME_TO_SCRIPT[card.name] = card
+    end
+
+    distribution(joueur, player_colors)
+end
+
+
+--[[---------------
+    CALL TO FILE
+-----------------]]
+
+function getFileTable()
+    return zoneFile.call("getFileTable")
+end
+
+function getReserveTable()
+    return zoneFile.call("getReserveTable")
+end
+
+function offsetSmoothMove(i, offset)
+    return zoneFile.call("offsetSmoothMove",{i=i, offset=offset, corruption=Corrupted, joueurs=joueur})
+end
+
+function givePointsOnCardTo(card, player)
+    return zoneFile.call("giveAllPointsToPlayer", {card=card, pos=getPointsPosition(player)})
+end
+
+function giveAllPointsToPlayer(i, player)
+    return zoneFile.call("giveAllPointsToPlayer", {i=i, pos=getPointsPosition(player)})
+end
+
+function giveNPointsToPlayer(i, player, n)
+    return zoneFile.call("giveNPointsToPlayer", {i=i, n=n, pos=getPointsPosition(player)})
+end
+
+function isBlessingInGame(color)
+    return zoneFile.call("isBlessingInGame") or zoneFile.call("isPaladinInGame", {color=color})
+end

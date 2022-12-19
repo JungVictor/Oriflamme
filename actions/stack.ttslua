@@ -1,0 +1,23 @@
+function Effect.stack_on(f, s, ts, o)
+    local cpt = 0
+    local color = Card.getColor(f[s])
+    local rot
+    local pos
+    for i = 1, #ts do
+        local target = ts[i]
+        if Card.isRevealed(f, target) then
+            rot = 0
+            pos = 0.4
+        else
+            rot = 180
+            pos = -0.4
+            f[target].setName("")
+            f[target].hide_when_face_down = false
+        end
+        cpt = cpt + 1
+        f[target].createButton(Button.BribeButton(
+            effect_action("stack_on", f, s, target, ts, o), pos, rot
+        ))
+        f[target].highlightOn({r = 0.8, g = 0.8, b = 0.8})
+    end
+end

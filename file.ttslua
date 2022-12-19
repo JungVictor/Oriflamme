@@ -1,0 +1,255 @@
+file = {}
+reserve = {
+    ["Red"] = {},
+    ["White"] = {},
+    ["Yellow"] = {},
+    ["Blue"] = {},
+    ["Green"] = {},
+}
+wait = {}
+zoneFile = self
+points = {}
+blessings = {}
+condemnations = {}
+
+function onLoad(save_state)
+    blessings_pack = getObjectFromGUID("d60a73")
+    condemns_pack = getObjectFromGUID('45eacb')
+end
+
+function addBlessingTo(params)
+    local bless = blessings_pack.clone()
+    bless.setScale({0.4, 0.4, 0.4})
+    bless.setName("Bénédiction")
+    bless.setLock(false)
+    blessings[params.card] = bless
+    local position = params.card.getPosition()
+    position.y = position.y + 0.4
+    bless.setPositionSmooth(position, false)
+end
+
+function hasBlessing(params)
+    local card = params.card
+    return blessings[card] != nil
+end
+
+function removeBlessing(params)
+    if blessings[params.card] == nil then return end
+    blessings[params.card].destruct()
+    blessings[params.card] = nil
+end
+
+
+function addCondemnationTo(params)
+    local condemn = condemns_pack.clone()
+    condemn.setScale({0.4, 0.4, 0.4})
+    condemn.setName("Condamnation")
+    condemn.setLock(false)
+    condemnations[params.card] = condemn
+    local position = params.card.getPosition()
+    position.y = position.y + 0.4
+    condemn.setPositionSmooth(position, false)
+end
+
+function isCondemned(params)
+    local card = params.card
+    return condemnations[card] != nil
+end
+
+function removeCondemnation(params)
+    if condemnations[params.card] == nil then return end
+    condemnations[params.card].destruct()
+    condemnations[params.card] = nil
+end
+
+function isPaladinInGame(params)
+    for _, v in pairs(file) do
+        if v.getName() == "Paladine" and v.getTags()[1] == params.color then return true end
+    end
+    return false
+end
+
+function isBlessingInGame()
+    for _, v in pairs(blessings) do
+        if v != nil then return true end
+    end
+    return false
+end
+
+function addPointToCard(params)
+    if points[params.card] == nil then points[params.card] = {} end
+    table.insert(points[params.card], params.point)
+end
+
+function offsetSmoothMove(params)
+    local i = params.i
+    local offset = params.offset
+    local card = file[i]
+    local corruption = params.corruption[card]
+    local joueur = params.joueurs
+    card.setPositionSmooth(card.getPosition() + offset, false)
+    if points[card] then
+        for _, p in pairs(points[card]) do
+            p.setPositionSmooth(p.getPosition() + offset, false)
+        end
+    end
+    if blessings[card] then
+        local p = blessings[card]
+        p.setPositionSmooth(p.getPosition() + offset, false)
+    end
+    if condemnations[card] then
+        local p = condemnations[card]
+        p.setPositionSmooth(p.getPosition() + offset, false)
+    end
+    if corruption then
+        corruption = joueur[card.getTags()[1]].corruption
+        corruption.setPositionSmooth(corruption.getPosition() + offset, false)
+    end
+end
+
+function removeAllPoints(params)
+    local i = params.i
+    if(points[file[i]] == nil) then return end
+    for _, p in pairs(points[file[i]]) do
+        p.destruct()
+    end
+    points[file[i]] = nil
+end
+
+function removePoints(params)
+    local i = params.i
+    local n = params.n
+    if(points[file[i]] == nil) then return end
+    while #points[file[i]] > 0 and n > 0 do
+        local p = points[file[i]][#points[file[i]]]
+        table.remove(points[file[i]], #points[file[i]])
+        p.destruct()
+        n = n - 1
+    end
+    if #points[file[i]] == 0 then points[file[i]] = nil end
+end
+
+function giveAllPointsToPlayer(params)
+    local card
+    if params.i then card = file[params.i]
+    else card = params.card end
+
+    if(points[card] == nil) then return end
+    local pos = params.pos.position
+    for _, p in pairs(points[card]) do
+        p.setPositionSmooth(pos, false)
+    end
+    points[card] = nil
+end
+
+function giveNPointsToPlayer(params)
+    local i = params.i
+    local n = params.n+0
+    if(points[file[i]] == nil) then return end
+    local pos = params.pos.position
+    local j = n
+    while j > 0 do
+        if #points[file[i]] > 0 then
+            local p = points[file[i]][#points[file[i]]]
+            table.remove(points[file[i]], #points[file[i]])
+            p.setPositionSmooth(pos, false)
+            j = j - 1
+        else j = 0 end
+    end
+end
+
+-- Retourne la file dans l'ordre
+function getFileTable()
+    return file
+end
+
+function getReserveTable()
+    return reserve
+end
+
+function addToReserve(params)
+    print("Reserved !")
+    table.insert(reserve[params.color], params.card)
+end
+
+function isReserved(params)
+    local card = params.card
+    local color = params.color
+    if #reserve[color] == 0 then return false end
+    for _, v in pairs(reserve[color]) do if card == v then return true end end
+    return false
+end
+
+function pointsOnCard(params)
+    return points[params.card] or {}
+end
+
+-- Retourne la file dans l'ordre
+function getPointsTable()
+    return points
+end
+
+-- Ajoute la carte à une liste d'attente quand on la rentre dans la file
+function onObjectEnterScriptingZone(zone, obj_enter)
+    if zone == zoneFile and #obj_enter.getTags() > 0 then
+        table.insert(wait, obj_enter)
+    end
+end
+
+-- Retire la carte de la liste d'attente quand on la retire de la file
+function onObjectLeaveScriptingZone(zone, obj_leave)
+    if zone == zoneFile then
+        local idx = find(wait, obj_leave)
+        if idx > 0 then table.remove(wait, idx) end
+        idx = find(file, obj_leave)
+        if idx > 0 then table.remove(file, idx) end
+    end
+end
+
+-- Trouve l'index de la carte dans la liste donnée
+function find(tbl, obj)
+    for i=1, #tbl do if tbl[i]==obj then return i end end
+    return -1
+end
+
+
+-- Ajoute la carte dans la file quand on la pose
+function onObjectDrop(color, obj)
+    local idx = find(wait, obj)
+    -- Obj in zone
+    if idx > 0 then
+        local objects = zoneFile.getObjects()
+        for i, o in pairs(objects) do
+            if o == obj then
+                idx = findPositionInFile(obj)
+                table.insert(file, idx, obj)
+                break
+            end
+        end
+    end
+end
+
+-- Retire la carte de la file quand on la soulève, et l'ajoute à la file d'attente
+function onObjectPickUp(color, obj)
+    local idx = find(file, obj)
+    if idx > 0 then
+        table.remove(file, idx)
+        table.insert(wait, obj)
+    end
+end
+
+-- Trouve l'index où doit s'insérer la carte dans la file
+function findPositionInFile(obj)
+    local x = obj.getPosition().x
+    local z = obj.getPosition().z
+    for i=1, #file do
+        local diff = math.abs(x - file[i].getPosition().x)
+        -- Approximatively the same (cards on top of each other)
+        if diff < 2.0 then
+            if file[i].getPosition().z < z then return i + 1
+            else return i end
+        end
+        if x < file[i].getPosition().x then return i end
+    end
+    return #file+1
+end

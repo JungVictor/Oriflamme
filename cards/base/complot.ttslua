@@ -1,0 +1,15 @@
+Complot = {
+    name = "Complot",
+    description = "Gagnez le double de PI présents sur le Complot. Défaussez le Complot.",
+    type = TYPE_STACK
+}
+
+function Complot.onReveal(file, idx)
+    local player = Card.getColor(file[idx])
+    local points = Card.getPoints(file[idx])
+    if points != nil then points = #points else points = 0 end
+    givePointsToPlayer(player, points)
+    giveAllPointsToPlayer(idx, player)
+    moveToDeathZone(player, file, idx, true)
+    startTurn(file, idx)
+end

@@ -1,0 +1,190 @@
+#include main
+
+function onLoad()
+    joueur = {
+        ["White"] = {
+            deck = getObjectFromGUID('34f9c8'),
+            first_position = {0.00, 1.06, -11.29},
+            first_rotation = {0.00, 180.00, 0.00},
+            zone_jeu = getObjectFromGUID('9d7c7b'),
+            hand = getObjectFromGUID("2a750c"),
+            corruption = getObjectFromGUID("f25912"),
+            points = getObjectFromGUID("376147")
+        },
+        ["Red"] = {
+            deck = getObjectFromGUID('b4ad7a'),
+            first_position = {26.21, 1.06, -11.29},
+            first_rotation = {0.00, 180.00, 0.00},
+            zone_jeu = getObjectFromGUID('ea2f84'),
+            hand = getObjectFromGUID("ca1ab6"),
+            corruption = getObjectFromGUID("b88f8b"),
+            points = getObjectFromGUID("1fb6ac")
+        },
+        ["Green"] = {
+            deck = getObjectFromGUID('fd1c68'),
+            first_position = {26.23, 1.06, 11.29},
+            first_rotation = {0.00, 0.00, 0.00},
+            zone_jeu = getObjectFromGUID('f42e47'),
+            hand = getObjectFromGUID("2740bc"),
+            corruption = getObjectFromGUID("0613c7"),
+            points = getObjectFromGUID("2f06eb")
+        },
+        ["Blue"] = {
+            deck = getObjectFromGUID('ec7c57'),
+            first_position = {-26.37, 1.06, 11.29},
+            first_rotation = {0.00, 0.00, 0.00},
+            zone_jeu = getObjectFromGUID('580f3a'),
+            hand = getObjectFromGUID("c99abe"),
+            corruption = getObjectFromGUID("a50a4f"),
+            points = getObjectFromGUID("f99cf2")
+        },
+        ["Yellow"] = {
+            deck = getObjectFromGUID('a8bc2c'),
+            first_position = {-26.33, 1.06, -11.29},
+            first_rotation = {0.00, 180.00, 0.00},
+            zone_jeu = getObjectFromGUID('880742'),
+            hand = getObjectFromGUID("2628a6"),
+            corruption = getObjectFromGUID("c98613"),
+            points = getObjectFromGUID("9a6ac6")
+        },
+    }
+
+    premier_joueur = getObjectFromGUID('85fbf4')
+    sens = getObjectFromGUID('a229f8')
+    bouton_setup =  getObjectFromGUID('308530')
+    stack_condamnation = getObjectFromGUID('45eacb')
+    influence_1 = getObjectFromGUID('287332')
+    player_colors = getSeatedPlayers()
+    zoneFile = getObjectFromGUID("0e468b")
+
+    move_right = getObjectFromGUID("29b0f3")
+    move_left = getObjectFromGUID("979df4")
+
+    COLOR_ORDER = {"White", "Yellow", "Blue", "Green", "Red"}
+    CURRENT = -1
+    buttons()
+    onLoad_init()
+end
+
+
+function buttons()
+
+    move_right.createButton({
+        click_function = "move_all_to_right",
+        function_owner = Global,
+        width = 1600,
+        height = 1000,
+        color = {0,0,0,0},
+        tooltip = "Déplacer vers la droite",
+        position = {0, 0.2, 0}
+    })
+
+    move_left.createButton({
+        click_function = "move_all_to_left",
+        function_owner = Global,
+        width = 1600,
+        height = 1000,
+        color = {0,0,0,0},
+        tooltip = "Déplacer vers la gauche",
+        position = {0, 0.2, 0}
+    })
+
+    bouton_setup.createButton({
+		click_function = "setup_auto",
+		function_owner = Global,
+		label          = "Démarrer",
+		width           = 2100,
+		height          = 700,
+		font_size       = 400,
+		color			= {1, 1, 1, 1},
+		position        = {-1, 1, 1}
+	})
+
+    sens.createButton({
+    	click_function = "turn",
+    	function_owner = Global,
+    	label          = "Résolution",
+    	width           = 3400,
+    	height          = 800,
+    	font_size       = 400,
+        tooltip         = "Résolution de la file",
+    	color			= {1, 0.5, 0.5, 0},
+    	position        = {0, 0.2, 0}
+    })
+
+	bouton_setup.createButton({
+        click_function = "setup_manuel",
+        function_owner = Global,
+		label          = "X",
+		width           = 400,
+		height          = 400,
+		font_size       = 300,
+		color			= {1, 1, 1, 1},
+        position        = {1.7, 1, 0.9}
+    })
+end
+
+function setup_manuel()
+	bouton_setup.destruct()
+end
+
+function setup_auto()
+    setup_manuel()
+    -- déterminer le 1er joueur
+    CURRENT = math.random(#player_colors)
+    first_player_color = player_colors[CURRENT]
+    CURRENT = find(COLOR_ORDER, first_player_color)
+    Wait.time(function ()
+        premier_joueur.setPositionSmooth(joueur[first_player_color].first_position)
+        premier_joueur.setRotationSmooth(joueur[first_player_color].first_rotation)
+        broadcastToAll(Player[first_player_color].steam_name..' joue en premier',first_player_color)
+    end, 1)
+
+    -- détruire les objets des joueurs absents
+    for key, value in pairs(joueur) do
+        if has_value(player_colors, key) then else
+            local objets = joueur[key].zone_jeu.getObjects()
+            for _, obj in pairs(objets) do
+                obj.destroy()
+            end
+            joueur[key].deck.destroy()
+        end
+    end
+
+    initDeal(joueur, player_colors)
+    initHUD()
+
+end
+
+--mettre à jour les couleurs
+function onPlayerChangeColor()
+    player_colors = getSeatedPlayers()
+end
+
+function next_player()
+    CURRENT = ((CURRENT) % #COLOR_ORDER) + 1
+    while not has_value(player_colors, COLOR_ORDER[CURRENT]) do
+        CURRENT = ((CURRENT) % #COLOR_ORDER) + 1
+    end
+    premier_joueur.setPositionSmooth(joueur[COLOR_ORDER[CURRENT]].first_position)
+    premier_joueur.setRotationSmooth(joueur[COLOR_ORDER[CURRENT]].first_rotation)
+end
+
+-- appeler des jetons et les placer sur le curseur souris
+function onScriptingButtonDown(index, color)
+    if index > 1 then return end
+    local params={}
+    params.position = getPointerPosition(color)
+    params.rotation = {0,getPointerRotation(color),0}
+    influence_1.takeObject(params)
+end
+
+-- [GENERIQUE] tester si une valeur est présente dans une table
+function has_value (tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end

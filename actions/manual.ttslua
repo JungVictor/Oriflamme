@@ -1,0 +1,5 @@
+function Effect.manual_action(f, i)
+    UI.show("ValidateManualAction")
+    UI.setAttribute("ValidateManualAction", "onClick", effect_action("manual_action", f, i, nil, f[i]))
+    UI.setAttribute("ValidateManualAction", "visibility", Card.getColor(f[i]))
+end

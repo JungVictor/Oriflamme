@@ -1,0 +1,23 @@
+Machination = {
+    name = "Machination",
+    description = "Défaussez la Machination.\nActivez la capacité de n'importe quel personnage révélé de votre famille. Chaque PI présent sur la Machination peut être soit gagné, soit défaussé pour répéter l'effet ci-dessus.",
+    type = TYPE_STACK
+}
+
+function Machination.onReveal(file, idx)
+    local player = Card.getColor(file[idx])
+    local all = {}
+    for i = 1, #file do all[i] = i end
+    Effect.aux["block"] = true
+    Effect.aux["machination"] = file[idx]
+    Effect.machination(file, idx, all)
+end
+
+function Machination.effect(f, card)
+    Machination.onReveal(f, find(f, card))
+end
+
+function Machination.onEndTurn(f, s)
+    moveToDeathZone(Card.getColor(f[s]), f, s, true)
+    return s
+end

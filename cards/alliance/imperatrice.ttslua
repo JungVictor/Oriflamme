@@ -1,0 +1,29 @@
+Imperatrice = {
+    isCharacter = true,
+    name = "Impératrice",
+    description = "Gagnez 2 PI. Placez 1 PI sur une carte adverse face cachée.",
+    type = TYPE_OTHER
+}
+
+function Imperatrice.onActivation(file, idx)
+    local name = file[idx].getName()
+    givePointsToPlayer(Card.getColor(file[idx]), 2)
+    local ts = getAllUnrevealedFoes(file, idx)
+    if #ts == 0 then
+        startTurn(file, Card.onEndTurn(file, idx))
+        return
+    end
+
+    Effect.stack_on(file, idx, ts, 1)
+end
+
+function getAllUnrevealedFoes(f, i)
+    local color = Card.getColor(f[i])
+    local ts = {}
+    for t, card in pairs(f) do
+        if Card.getColor(f[t]) != color and not Card.isRevealed(f, t) and not Card.isCovered(f, t) then
+            table.insert(ts, t)
+        end
+    end
+    return ts
+end

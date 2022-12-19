@@ -1,0 +1,15 @@
+Soldat = {
+    isCharacter = true,
+    name = "Soldat",
+    description = "Éliminez une carte adjacente.",
+    type = TYPE_KILLER
+}
+
+-- Effet d'activation de la carte
+function Soldat.onActivation(file, idx)
+    Effect.elimination(file, idx, getNeighbours(file, idx))
+end
+
+function Soldat.onElimination(file, source, target)
+    givePointsToPlayer(Card.getColor(file[source]), 1)
+end

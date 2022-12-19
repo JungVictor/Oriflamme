@@ -1,0 +1,27 @@
+Infiltrateur = {
+    isCharacter = true,
+    name = "Infiltrateur",
+    description = "Gagnez 1 PI, puis déplacez l'Infiltrateur n'importe où dans la File.",
+    type = TYPE_OTHER
+}
+
+infiltrateurs = {}
+
+function Infiltrateur.onActivation(file, idx)
+    if infiltrateurs[file[idx]] == nil or Effect.aux["machination"] then
+        givePointsToPlayer(Card.getColor(file[idx]), 1)
+        Effect.manual_action(file, idx)
+        infiltrateurs[file[idx]] = idx
+    else
+        infiltrateurs[file[idx]] = nil
+        startTurn(file, Card.onEndTurn(file, idx))
+    end
+end
+
+function Infiltrateur.onEndTurn(f, s)
+    local i = infiltrateurs[f[s]]
+    f[s].highlightOff()
+    if not i then return s + 1 end
+    if s > i then return i end
+    return i+1
+end

@@ -1,0 +1,74 @@
+Event = {}
+
+function Event.end_game(f, r)
+    if not r then r = getReserveTable() end
+    local card
+    -- Cartes dans la file
+    for i, name in pairs(f) do
+        card = Card.getScript(f[i].getName())
+        if card.onEventEndGame then card.onEventEndGame(f, i, f[i]) end
+    end
+
+    -- Cartes dans la réserve (par famille)
+    for color, tab in pairs(r) do
+        for _, reserved in pairs(r[color]) do
+            card = Card.getScript(reserved.getName())
+            if card.onEventEndGame then card.onEventEndGame(f, -1, reserved) end
+        end
+    end
+end
+
+
+function Event.new_turn(f, r)
+    if not r then r = getReserveTable() end
+    local card
+    -- Cartes dans la file
+    for i, name in pairs(f) do
+        card = Card.getScript(f[i].getName())
+        if card.onEventNewTurn then card.onEventNewTurn(f, i, f[i]) end
+    end
+
+    -- Cartes dans la réserve (par famille)
+    for color, tab in pairs(r) do
+        for _, reserved in pairs(r[color]) do
+            card = Card.getScript(reserved.getName())
+            if card.onEventNewTurn then card.onEventNewTurn(f, -1, reserved) end
+        end
+    end
+end
+
+function Event.elimination(f, s, t, r)
+    r = r or getReserveTable()
+    local card
+    -- Cartes dans la file
+    for i, name in pairs(f) do
+        card = Card.getScript(f[i].getName())
+        if card.onEventElimination then card.onEventElimination(f, s, t, i, f[i]) end
+    end
+
+    -- Cartes dans la réserve (par famille)
+    for color, tab in pairs(r) do
+        for _, reserved in pairs(r[color]) do
+            card = Card.getScript(reserved.getName())
+            if card.onEventElimination then card.onEventElimination(f, s, t, -1, reserved) end
+        end
+    end
+end
+
+function Event.reveal(f, s, r)
+    if not r then r = getReserveTable() end
+    local card
+    -- Cartes dans la file
+    for i, name in pairs(f) do
+        card = Card.getScript(f[i].getName())
+        if card.onEventReveal then card.onEventReveal(f, s, i, f[i]) end
+    end
+
+    -- Cartes dans la réserve (par famille)
+    for color, tab in pairs(r) do
+        for _, reserved in pairs(r[color]) do
+            card = Card.getScript(reserved.getName())
+            if card.onEventReveal then card.onEventReveal(f, s, -1, reserved) end
+        end
+    end
+end

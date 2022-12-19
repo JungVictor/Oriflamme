@@ -1,0 +1,29 @@
+Vol_a_la_tire = {
+    name = "Vol à la tire",
+    description = "Volez 1 PI sur une carte face cachée pour chaque PI présent sur Vol à la tire. Défaussez Vol à la tire.\n---- OU ----\nSi un joueur élimine cette carte, il gagne les PI présents sur celle-ci.",
+    type = TYPE_STACK,
+}
+
+function Vol_a_la_tire.onReveal(file, idx)
+    local player = Card.getColor(file[idx])
+    local points = Card.getPoints(file[idx])
+    if points != nil then points = #points else points = 0 end
+    giveAllPointsToPlayer(idx, player)
+    if points > 0 then Effect.snatch(file, idx, getAllUncovered(file, idx), points)
+    else
+        moveToDeathZone(player, file, idx, false)
+        startTurn(file, idx)
+    end
+end
+
+function Vol_a_la_tire.onEndTurn(f, s)
+    moveToDeathZone(Card.getColor(f[s]), f, s, true)
+    return s
+end
+
+-- Source est la carte à l'origine de la mort
+-- Target est cette carte
+function Vol_a_la_tire.onDeath(file, source, target)
+    local player = Card.getColor(file[source])
+    giveAllPointsToPlayer(idx, player)
+end

@@ -1,0 +1,31 @@
+Usurpation = {
+    name = "Usurpation",
+    description = "Éliminez une carte adjacente. Si c'est un personnage adverse, remplacez-le par le même personnage, révélé, parmi vos cartes écartées, défaussées ou éliminées.\nDéfaussez l'Usurpation.",
+    type = TYPE_INSTANT
+}
+
+function Usurpation.onReveal(file, idx)
+    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
+    Effect.elimination(file, idx, getNeighbours(file, idx))
+end
+
+function Usurpation.onElimination(file, source, target)
+    givePointsToPlayer(Card.getColor(file[source]), 1)
+    local usurpation = getCard(file[target].getName(), Card.getColor(file[source]))
+    if usurpation then
+        if not Card.isCovered(file, target + 1) then
+            table.insert(file, target + 1, usurpation)
+            local params = file[target].getPosition()
+            usurpation.setPositionSmooth(params, false, true)
+            local rotation = file[target].getRotation()
+            rotation.z = 0
+            usurpation.setRotationSmooth(rotation, false, true)
+            if source > target then return 1 end
+        end
+    end
+end
+
+function Usurpation.onEndTurn(f, s)
+    moveToDeathZone(Card.getColor(f[s]), f, s, true)
+    return s
+end

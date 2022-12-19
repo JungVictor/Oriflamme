@@ -1,0 +1,29 @@
+Martyr = {
+    name = "Martyr",
+    description = "Défaussez les PI présents sur le Martyr puis gagnez 1 PI. Défaussez le Martyr.\n---- OU ----\nSi le Martyr est éliminé par une carte adverse, gagnez le double de PI présents sur le Martyr.",
+    type = TYPE_ONDEATH
+}
+
+function Martyr.onReveal(file, idx)
+    Card.removePoints(idx)
+    local player = Card.getColor(file[idx])
+    givePointsToPlayer(player, 1)
+    moveToDeathZone(player, file, idx, true)
+    startTurn(file, Card.onEndTurn(file, idx))
+end
+
+-- Source est la carte à l'origine de la mort
+-- Target est cette carte
+function Martyr.onDeath(file, source, target)
+    local player = Card.getColor(file[target])
+    if Card.getColor(file[source]) != player then
+        local points = Card.getPoints(file[target])
+        if points != nil then points = #points else points = 0 end
+        givePointsToPlayer(player, points)
+        giveAllPointsToPlayer(target, player)
+    end
+end
+
+function Martyr.onEndTurn(f, i)
+    return i
+end

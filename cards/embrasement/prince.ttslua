@@ -1,0 +1,86 @@
+
+--[[---------------
+      PRINCE
+-----------------]]
+
+Prince = {
+    isCharacter = true,
+    name = "Prince",
+    description = "Lorsque vous révélez le Prince, placez le Jumeau de votre famille, révélé, dans la File.\n-----------\nGagnez 1 PI.\n-----------\nLorsque le Prince est éliminé, défaussez le Jumeau de votre famille, sauf s'il est recouvert.",
+    isLinked = true,
+    type = TYPE_OTHER
+}
+
+function Prince.onReveal(f, s)
+    giveAllPointsToPlayer(s, Card.getColor(f[s]))
+    -- Ajoute le jumeau dans la file
+    local jumeau = getCard(Jumeau.name, Card.getColor(f[s]))
+    if jumeau then
+        local rotation = f[s].getRotation()
+        rotation.z = 0
+        jumeau.setRotationSmooth(rotation, false, true)
+        jumeau.setPositionSmooth(getLastPositionInFile(f))
+        table.insert(f, jumeau)
+        Effect.manual_action(f, s)
+    else startTurn(f, Card.onEndTurn(f, s)) end
+end
+
+function Prince.onActivation(f, s)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+function Prince.onDeath(f, s, t)
+    return Prince.effect(f, s, t, Jumeau.name)
+end
+
+
+--[[---------------
+      JUMEAU
+-----------------]]
+
+Jumeau = {
+    isCharacter = true,
+    name = "Jumeau",
+    description = "Gagnez 1 PI.\n-----------\nLorsque le Jumeau est éliminé, défaussez le Prince de votre famille, sauf s'il est recouvert.",
+    isLinked = true,
+    type = TYPE_OTHER,
+    isToken = true
+}
+
+function Jumeau.onActivation(f, s)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+function Jumeau.onDeath(f, s, t)
+    return Prince.effect(f, s, t, Prince.name)
+end
+
+
+--[[---------------
+      COMMUN
+-----------------]]
+
+function Prince.effect(f, s, t, name)
+    local color = Card.getColor(f[t])
+    local cards = {}
+    for i, v in pairs(f) do
+        if v.getName() == name and Card.getColor(v) == color then
+            table.insert(cards, i)
+        end
+    end
+    local mid = #f / 2
+    local cpt = {0,0}
+    local p = #cards
+    while p > 0 do
+        local i = cards[p]
+        -- Nombre de fois qu'on recule dans la file
+        if i < s then cpt[1] = cpt[1] + 1 end
+        if i < t then cpt[2] = cpt[2] + 1 end
+
+        moveToDeathZone(color, f, i, mid > i)
+        p = p - 1
+    end
+    return cpt
+end

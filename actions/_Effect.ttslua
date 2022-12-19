@@ -1,0 +1,274 @@
+Effect = {
+    aux = {}
+}
+
+-- Attacher les paramètres à une fonction
+function effect_action(func, f, s, t, ts, o)
+    local fn_name = func .. tostring(s)
+    if not t then else fn_name = fn_name  .. "_" .. tostring(t) end
+    _G[fn_name] = function(obj, player, alt)
+        _G["effect_" .. func](f, s, t, ts, o, player)
+    end
+    return fn_name
+end
+
+-- Remettre les cibles par défaut
+function effect_clean_targets(f, ts)
+    for i = 1, #f do
+        f[i].hide_when_face_down = true
+        if f[i].getName() == Changeforme.name and f[i].memo != Changeforme.name then
+        else f[i].setName(f[i].memo) end
+        f[i].clearButtons()
+        f[i].highlightOff()
+    end
+end
+
+function effect_manual_action(f, s, t, card)
+    Effect.aux["last_action"] = "manual"
+
+    UI.hide("ValidateManualAction")
+    for j, v in pairs(f) do
+        if v == card then s = j end
+    end
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+function effect_multichoice(f, s, choice)
+    Effect.aux["last_action"] = "multichoice"
+    Effect.hide_multichoice()
+    Card.choice(f, s, choice)
+end
+
+-- Elimination
+function effect_eliminate(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "eliminate"
+    effect_clean_targets(f, ts)
+
+    Card.eliminate(f, s, t, s+1)
+end
+
+function effect_condemn(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "condemn"
+    effect_clean_targets(f, ts)
+
+    Card.condemn(f, t)
+    Wait.time(function() startTurn(f, Card.onEndTurn(f, s)) end, 1)
+end
+
+function effect_corrupt(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "corrupt"
+    effect_clean_targets(f, ts)
+
+    Card.corrupt(f, s, t)
+    Wait.time(function() startTurn(f, Card.onEndTurn(f, s)) end, 1)
+end
+
+-- Voler à un joueur
+function effect_steal(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "steal"
+    effect_clean_targets(f, ts)
+
+    local target = Card.getColor(f[t])
+    stealFrom(player, target, 1)
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+-- Voler sur une carte
+function effect_snatch(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "snatch"
+    effect_clean_targets(f, ts)
+
+    giveNPointsToPlayer(t, player, o)
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+-- Ajouter un jeton de bénédiction sur une carte
+function effect_bless(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "bless"
+    effect_clean_targets(f, ts)
+
+    Card.addBlessing(f[t])
+    startTurn(f, Card.onEndTurn(f, s))
+end
+
+-- Payer un joueur
+function effect_bribe(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "bribe"
+
+    f[t].clearButtons()
+    f[t].highlightOff()
+    giveNPointsToPlayer(Card.getColor(f[t]), 1)
+    local points = Card.getPoints(f[i])
+    if points == nil or #points <= 0 then
+        f[i].clearButtons()
+        f[i].highlightOff()
+        effect_clean_targets(f, ts)
+        startTurn(f, Card.onEndTurn(f, s))
+    end
+end
+
+-- Récupérer tous les jetons sur une carte
+function effect_collect_all(f, i, t, ts, o, color)
+    local player = Card.getColor(f[i])
+    if player != color then return end
+    Effect.aux["last_action"] = "collect_all"
+    effect_clean_targets(f, ts)
+
+    giveAllPointsToPlayer(t, player)
+    startTurn(f, Card.onEndTurn(f, i))
+end
+
+-- Récupérer un jeton sur une carte
+function effect_collect(f, i, t, ts, o, color)
+    local shift = Effect.aux["shift"] or 0
+    i = i - shift
+    local player = Card.getColor(f[i])
+    if player != color then return end
+    Effect.aux["last_action"] = "collect"
+
+    giveNPointsToPlayer(i, player, 1)
+    local points = Card.getPoints(f[i])
+    if points == nil or #points <= 0 then
+        f[i].clearButtons()
+        f[i].highlightOff()
+        effect_clean_targets(f, ts)
+        Effect.aux["shift"] = 0
+        Effect.aux["block"] = false
+        Effect.aux["continue"] = true
+        startTurn(f, Card.onEndTurn(f, i))
+    end
+end
+
+function Effect.check_shifting(f, t, card)
+    Effect.aux["shift"] = Effect.aux["shift"] + Effect.check_shift(f, t, card)
+end
+
+function Effect.check_shift(f, t, card)
+    if card != f[t] then
+        local shift = 1
+        -- Décalage sur la gauche
+        while shift < t and card != f[t - shift] do shift = shift + 1 end
+        -- Décalage sur la droite
+        if shift == t then
+            shift = -1
+            -- Si ça plante, alors la carte a disparu lol mdr
+            while card != f[t - shift] do shift = shift - 1 end
+        end
+        return shift
+    end
+    return 0
+end
+
+function search(f, card)
+    for i, v in pairs(f) do if v == card then return i end end
+    return -1
+end
+
+function effect_activate(f, io, to, ts, o, color)
+    local i = search(f, Effect.aux["machination"])
+    local player = Card.getColor(f[i])
+    if player != color then return end
+    Effect.aux["last_action"] = "activate"
+
+    local t = search(f, o[to])
+    local card = f[t]
+    local source = f[i]
+    local points = Card.getPoints(f[i])
+
+    f[i].clearButtons()
+    f[i].highlightOff()
+    effect_clean_targets(f)
+
+    Card.removePoints(i, 1)
+    Card.onActivation(f, t)
+end
+
+function effect_remove_points(f, i, t, ts, o, color)
+    local player = Card.getColor(f[i])
+    if player != color then return end
+    Effect.aux["last_action"] = "remove_points"
+
+    Card.removePoints(i, 1)
+    local points = Card.getPoints(f[i])
+    if points == nil or #points <= 0 then
+        f[i].clearButtons()
+        f[i].highlightOff()
+        effect_clean_targets(f, ts)
+        moveToDeathZone(player, f, i, false)
+        startTurn(f, Card.onEndTurn(f, i))
+    end
+end
+
+-- Copier l'effet d'une carte
+function effect_morph(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "morph"
+    effect_clean_targets(f, ts)
+
+    Card.onMorph(f, s, t)
+end
+
+-- Ressuscite une carte
+function effect_resurrect(f, s, t, ts, o, color)
+    local player = Card.getColor(f[s])
+    if player != color then return end
+    Effect.aux["last_action"] = "resurrect"
+    -- Clean
+    for i = 1, #ts do
+        ts[i].clearButtons()
+        ts[i].highlightOff()
+    end
+
+    local card = f[s]
+    local player = Card.getColor(f[s])
+    table.insert(EliminatedCards[player], card)
+    table.remove(EliminatedCards[player], find(EliminatedCards[player], t))
+    card.highlightOff()
+    table.remove(f, s)
+    table.insert(f, s, t)
+    swapCards(card, t)
+    startTurn(f, s)
+end
+
+function effect_stack(f, i, t, ts, o, color)
+    UI.hide("StackAction")
+    UI.hide("RevealAction")
+    Effect.aux["last_action"] = "stack"
+    Card.stack(f[i], 1)
+    startTurn(f, i+1)
+end
+
+function effect_stack_on(f, i, t, ts, o, color)
+    local player = Card.getColor(f[i])
+    if player != color then return end
+    Effect.aux["last_action"] = "stack"
+    effect_clean_targets(f, ts)
+    Card.stack(f[t], o or 1)
+    startTurn(f, Card.onEndTurn(f, i))
+end
+
+function effect_reveal(f, i, t, ts, o, color)
+    UI.hide("StackAction")
+    UI.hide("RevealAction")
+    broadcastToAll(f[i].getName() .. " révélé !", Card.getColor(f[i]))
+    to_everyone(f[i].getName(), color)
+    local rotation = f[i].getRotation()
+    rotation.z = 0
+    f[i].setRotationSmooth(rotation, false, true)
+    Wait.time(function() Card.onReveal(f, i) end, 0.5)
+end

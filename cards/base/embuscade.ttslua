@@ -1,0 +1,40 @@
+Embuscade = {
+    name = "Embuscade",
+    description = "Défaussez les PI présents sur l'Embuscade puis gagnez 1 PI. Défaussez l'Embuscade.\n---- OU ----\nSi l'Embuscade est éliminée par une carte adverse, défaussez la carte adverse et gagnez 4 PI.",
+    type = TYPE_ONDEATH
+}
+
+function Embuscade.onReveal(file, idx)
+    Card.removePoints(idx)
+    local player = Card.getColor(file[idx])
+    givePointsToPlayer(player, 1)
+    moveToDeathZone(player, file, idx, true)
+    startTurn(file, idx)
+end
+
+-- Source est la carte à l'origine de la mort
+-- Target est cette carte
+function Embuscade.onDeath(file, source, target)
+    local player = Card.getColor(file[target])
+    if player == Card.getColor(file[source]) then return end
+    local next = source
+    if source > target then next = next - 1 end
+    local tcard = file[target]
+    eliminate(file, target, source, -1)
+    if file[target] != tcard and source < target then
+        target = target - 1
+        moveToDeathZone(player, file, target, source < target)
+        return next
+    end
+end
+
+function Embuscade.onElimination(file, source, target)
+    local player = Card.getColor(file[source])
+    if(player != Card.getColor(file[target])) then
+        givePointsToPlayer(player, 4)
+    end
+end
+
+function Embuscade.isDeathEffect()
+    return true
+end

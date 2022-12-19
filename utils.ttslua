@@ -1,0 +1,463 @@
+#include cards
+#include engine
+
+-- Arrondi un nombre
+local function round(num)
+  return num + (2^52 + 2^51) - (2^52 + 2^51)
+end
+
+-- Trouve l'index de la carte dans la liste donnée
+function find(tbl, obj)
+    for i=1, #tbl do if tbl[i]==obj then return i end end
+    return -1
+end
+
+--[[---------------------
+        POSITION
+-----------------------]]
+--[[--------------------
+
+    getLeftNeighbour
+    getRightNeighbour
+    getNeighbours
+    getNeighboursN
+    getAdjacentToColor
+    getAllNeighbours
+    getAllUncovered
+    getAllRevealed
+    getFirstAndLast
+
+---------------------]]
+
+-- Retourne l'index de la carte à gauche de i
+function getLeftNeighbour(f, i)
+    local left = i - 1
+    -- S'il y a un voisin potentiel
+    while left > 0 and Card.isCovered(f, left) do left = left - 1 end
+    if left <= 0 then left = -1
+    else if f[left].getName() == Machination.name and Card.isRevealed(f, left) then
+        left = left - 1
+        if left <= 0 then left = -1 end
+    end end
+    return left
+end
+
+-- Retourne l'index de la carte à droite de i
+function getRightNeighbour(f, i)
+    local right = i + 1
+    -- S'il y a un voisin potentiel
+    while right <= #f and Card.isCovered(f, right) do right = right + 1 end
+    if right >= #f+1 then right = -1
+    else
+        if f[right].getName() == Machination.name and Card.isRevealed(f, right) then
+            right = right + 1
+            if right >= #f+1 then right = -1 end
+        end
+    end
+    return right
+end
+
+-- Retourne les voisins de la carte d'index idx
+function getNeighbours(file, idx)
+    local left = getLeftNeighbour(file, idx)
+    local right = getRightNeighbour(file, idx)
+    return {left, right}
+end
+
+-- Retourne les voisins de la carte d'index idx
+function getNeighboursN(file, idx, n)
+    local left = idx
+    local right = idx
+    for i=1, n do left = getLeftNeighbour(file, left) end
+    for i=1, n do right = getRightNeighbour(file, right) end
+    return {left, right}
+end
+
+function getAdjacentToColor(f, color, s)
+    local ts = {}
+    for i, card in pairs(f) do
+        if (not s or i != s) and Card.getColor(f[i]) == color and not isRevealedMachination(f, i) then
+            local adj = getNeighbours(f, i)
+            if adj[1] > 0 then
+                if (#ts == 0)
+                or (#ts == 1 and ts[1] != adj[1])
+                or (#ts > 1 and ts[#ts-1] != adj[1] and ts[#ts] != adj[1]) then
+                    ts[#ts+1] = adj[1]
+                end
+            end
+            if adj[2] <= #f then ts[#ts+1] = adj[2] end
+        end
+    end
+    return ts
+end
+
+function isRevealedMachination(f, i)
+    return f[i].getName() == Machination.name and Card.isRevealed(f, i)
+end
+
+-- Retourne les voisins de la carte d'index idx
+function getAllNeighbours(file, idx)
+    local neighbours = {}
+    local i = idx + 1
+    if i <= #file then
+        if not isRevealedMachination(file, i) then table.insert(neighbours, i) end
+        i = i + 1
+        while i <= #file and Card.isCovered(file, i) do
+            if not isRevealedMachination(file, i) then table.insert(neighbours, i) end
+            i = i + 1
+        end
+        if i <= #file then
+            local diff = math.abs(file[idx].getPosition().x - file[i].getPosition().x)
+            if diff < 3.0 then
+                if not isRevealedMachination(file, i) then table.insert(neighbours, i) end
+                i = i + 1
+                while i <= #file and Card.isCovered(file, i) do
+                    if not isRevealedMachination(file, i) then table.insert(neighbours, i) end
+                    i = i + 1
+                end
+            end
+        end
+    end
+    i = idx - 1
+    if i > 0 then
+        if not isRevealedMachination(file, i) then table.insert(neighbours, i) end
+        while i > 0 and Card.isCovered(file, i) do
+            i = i - 1
+            if not isRevealedMachination(file, i) then table.insert(neighbours, i) end
+        end
+    end
+    return neighbours
+end
+
+-- Retourne les cartes non couvertes
+function getAllUncovered(file, idx)
+    local uncovered = {}
+    for i, v in pairs(file) do
+        if not Card.isCovered(file, i) and i != idx and not isRevealedMachination(file, idx ) then table.insert(uncovered, i) end
+    end
+    return uncovered
+end
+
+function getAllRevealed(f, idx)
+    local revealed = {}
+    for i, v in pairs(f) do
+        if Card.isRevealed(f, i) and not isRevealedMachination(f, i) and i != idx then table.insert(revealed, i) end
+    end
+    return revealed
+end
+
+function getAllUnrevealed(f, idx)
+    local unrevealed = {}
+    for i, v in pairs(f) do
+        if not Card.isRevealed(f, i) then table.insert(unrevealed, i) end
+    end
+    return unrevealed
+end
+
+-- Retourne la première et la dernière carte de la file
+function getFirstAndLast(file)
+    local last = #file
+    while last > 0 and Card.isCovered(file, last) and isRevealedMachination(file, last) do
+        last = last - 1
+    end
+    if last == 0 then last = -1 end
+    local first = 1
+    if isRevealedMachination(file, first) then first = 2 end
+    return {first, last}
+end
+
+--[[---------------------
+           CARDS
+-----------------------]]
+--[[---------------------
+
+    getEliminatedCards
+    getCardEliminated
+    getCardDeck
+    getCard
+    swapCards
+
+-----------------------]]
+
+-- Retourne toutes les cartes éliminées du joueur player
+function getEliminatedCards(player)
+    return EliminatedCards[player]
+end
+
+-- Retourne la carte demandée parmi les cartes éliminées
+function getCardEliminated(name, color)
+    for i, v in pairs(EliminatedCards[color]) do
+        if v.getName() == name then return v end
+    end
+    return nil
+end
+
+-- Cherche la carte demandée dans le deck du joueur
+function getCardDeck(name, color)
+    local deck = joueur[color].deck
+    for i, v in pairs(deck.getObjects()) do
+        if v.name == name then
+            print(name)
+            return deck.takeObject({index=i-1})
+        end
+    end
+    return nil
+end
+
+-- Cherche la carte demandée dans le deck et dans la défausse du joueur
+function getCard(name, color)
+    return getCardEliminated(name, color) or getCardDeck(name, color)
+end
+
+
+-- Échange la position des deux cartes
+function swapCards(card1, card2)
+    local pos = card1.getPosition()
+    local rot = card1.getRotation()
+    card1.setPositionSmooth(card2.getPosition(), false)
+    card1.setRotationSmooth(card2.getRotation(), false)
+    card2.setPositionSmooth(pos, false)
+    card2.setRotationSmooth(rot, false)
+end
+
+--[[---------------------
+           POINTS
+-----------------------]]
+--[[---------------------
+
+    getPointsPosition
+    totalPointOf
+    stealFrom
+    givePointsToPlayer
+    removePointsFromPlayer
+
+-----------------------]]
+
+function getPointsPosition(color)
+    local params={}
+    params.position = joueur[color].points.getPosition()
+    params.position.y = params.position.y + 3
+    params.rotation = {0,getPointerRotation(color),0}
+    return params
+end
+
+-- Retourne le nombre total de point d'un joueur
+function totalPointOf(player)
+    return joueur[player].points.getQuantity()
+end
+
+-- source vole i points à target
+function stealFrom(source, target, i)
+    local pos = getPointsPosition(source)
+    local points_target = joueur[target].points
+    -- On peut voler
+    while i > 0 and points_target.getQuantity() > 0 do
+        points_target.takeObject(pos)
+        i = i - 1
+    end
+end
+
+-- Distribue les points au joueur
+function givePointsToPlayer(player, points)
+    local p
+    local params = getPointsPosition(player)
+    while points > 0 do
+        p = influence_1.takeObject(params)
+        points = points - 1
+    end
+end
+
+function removePointsFromPlayer(player, n)
+    local p
+    local points = joueur[player].points
+    local params = {}
+    params.position = influence_1.getPosition()
+    params.position.y = params.position.y + 1
+    params.rotation = influence_1.getRotation()
+    -- On retire un par un
+    while n > 0 and points.getQuantity() > 0 do
+        p = points.takeObject(params)
+        n = n - 1
+    end
+end
+
+--[[---------------------
+           MOVING
+-----------------------]]
+--[[---------------------
+
+    moveCardToPos
+    move_to_right
+    move_to_left
+    move_all_to_right
+    move_all_to_left
+    empty_slot
+    balance_table
+    moveToDeathZone
+    getLastPositionInFile
+    getFirstPositionInFile
+
+-----------------------]]
+
+-- Déplace la carte d'un certain offset
+function moveCardToPos(f, i, offset)
+    offsetSmoothMove(i, offset)
+end
+
+-- Déplace une carte vers la droite
+function move_to_right(f, s, e, m)
+    local i = e
+    while i >= s do
+        moveCardToPos(f, i, MOVE_CARDS_TO_RIGHT*m)
+        i = i - 1
+    end
+end
+
+-- Déplace une carte vers la gauche
+function move_to_left(f, s, e, m)
+    local i = s
+    while i <= e do
+        moveCardToPos(f, i, MOVE_CARDS_TO_LEFT*m)
+        i = i + 1
+    end
+end
+
+
+-- Déplace toutes les cartes vers la droite
+function move_all_to_right()
+    if Engine.aux["moving"] then return end
+    Engine.aux["pending_move"] = (Engine.aux["pending_move"] or 0) + 1
+    Wait.time(
+        function()
+            Engine.aux["moving"] = true
+            local f = getFileTable()
+            move_to_right(f, 1, #f, Engine.aux["pending_move"])
+            Engine.aux["pending_move"] = 0
+            Wait.time(function() Engine.aux["moving"] = false end, 1)
+        end, 0.4
+    )
+end
+
+-- Déplace toutes les cartes vers la gauche
+function move_all_to_left()
+    if Engine.aux["moving"] then return end
+    Engine.aux["pending_move"] = (Engine.aux["pending_move"] or 0) + 1
+    Wait.time(
+        function()
+            Engine.aux["moving"] = true
+            local f = getFileTable()
+            move_to_left(f, 1, #f, Engine.aux["pending_move"])
+            Engine.aux["pending_move"] = 0
+            Wait.time(function() Engine.aux["moving"] = false end, 1)
+        end, 0.4
+    )
+end
+
+-- Vérifie que la file contient un emplacement libre
+function empty_slot(f, i, n)
+    if n <= 0 or n > #f then return 0 end
+    if i <= 0 or i > #f then return 0 end
+    return round(math.abs(f[i].getPosition().x - f[n].getPosition().x) / 8.5)
+end
+
+-- Déplace les cartes pour centrer la table
+function balance_table(f, t, n)
+    local m = empty_slot(f, t, t+n)
+    if m < 1 then return end
+
+    local mid = #f / 2
+    if t > mid then move_to_left(f, t, #f, m)
+    else move_to_right(f, 1, t-1, m) end
+end
+
+-- Sort de la file et déplace la carte dans la zone d'élimination
+function moveToDeathZone(player, f, i, left)
+    f[i].highlightOff()
+    local e = 1
+    while e < #EliminatedCards[player]+1 and EliminatedCards[player][e] do
+        e = e + 1
+    end
+    table.insert(EliminatedCards[player], e, f[i])
+    local snap = getSnapPointEliminated(player, e)
+    local pos = snap.position
+    local rot = snap.rotation
+    if pos == nil then pos = joueur[player].zone_jeu.getPosition() end
+    f[i].setRotationSmooth(rot, false)
+    f[i].setPositionSmooth(pos, false)
+    Card.restoreColor(f[i])
+    Card.removeCondemnation(f[i])
+    Card.removePoints(i)
+    table.remove(f, i)
+    balance_table(f, i, -1)
+end
+
+-- Sort de la file et déplace la carte dans la zone d'élimination
+function moveToHand(player, f, i, left)
+    f[i].highlightOff()
+    local pos = joueur[player].hand.getPosition()
+    local rot = joueur[player].hand.getRotation()
+    print(rot)
+    rot.y = (rot.y + 180) % 360
+    print(f[i].getRotation())
+    if pos == nil then pos = joueur[player].zone_jeu.getPosition() end
+    f[i].setRotationSmooth(rot, false)
+    f[i].setPositionSmooth(pos, false)
+    Card.restoreColor(f[i])
+    Card.removeCondemnation(f[i])
+    Card.removeBlessing(f[i])
+    Card.removePoints(i)
+    table.remove(f, i)
+    balance_table(f, i, -1)
+end
+
+-- Récupère la position de la dernière carte de la file
+function getLastPositionInFile(f)
+    return f[#f].getPosition() + MOVE_CARDS_TO_RIGHT
+end
+
+-- Récupère la position de la première carte de la file
+function getFirstPositionInFile(f)
+    return f[1].getPosition() + MOVE_CARDS_TO_LEFT
+end
+
+-- Retourne le snap correspondant
+function getSnapPointEliminated(color, i)
+    local snaps = Global.getSnapPoints()
+    local tags = {color, "E" .. i}
+    for k, snap in pairs(snaps) do
+        if has_all_tags(snap, tags) then return snap end
+    end
+    return nil
+end
+
+function getSnapPointReserve(color, i)
+    local snaps = Global.getSnapPoints()
+    local tags = {color, "R" .. i}
+    for k, snap in pairs(snaps) do
+        if has_all_tags(snap, tags) then return snap end
+    end
+    return nil
+end
+
+function getCorruption(color)
+    return joueur[color].corruption
+end
+
+function getCorruptionPosition(color)
+    return joueur[color].corruption_pos
+end
+
+function restoreCorruption(color)
+    local params = getCorruptionPosition(color)
+    joueur[color].corruption.setPositionSmooth(params.position, false, true)
+    joueur[color].corruption.setRotationSmooth(params.rotation, false, true)
+end
+
+function has_all_tags(o, tags)
+    if #o["tags"] < #tags then return false end
+    for i = 1, #tags do
+        local tag = tags[i]
+        if not has_value(o["tags"], tag) then return false end
+    end
+    return true
+end

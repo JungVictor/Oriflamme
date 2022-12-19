@@ -1,0 +1,30 @@
+-- VOL A LA TIRE
+
+function Effect.snatch(file, source, targets, n)
+    local cpt = 0
+    for i = 1, #targets do
+        local target = targets[i]
+        local points = Card.getPoints(file[target])
+        if target > 0 and points != nil and #points > 0 then
+            local pos = 0.4
+            local rot = 0
+            if not Card.isRevealed(file, target) then
+                file[target].setName("")
+                file[target].hide_when_face_down = false
+                pos = -pos
+                rot = 180
+            end
+            cpt = cpt + 1
+            file[target].createButton(Button.SnatchButton(
+                effect_action("snatch", file, source, target, targets, n), pos, rot
+            ))
+            file[target].highlightOn({r = 0.3, g = 0.3, b = 0.3})
+        end
+    end
+    -- No one to copy
+    if cpt == 0 then
+        Wait.time(function() end, 1)
+        moveToDeathZone(Card.getColor(file[source]), file, source, false)
+        startTurn(file, source)
+    end
+end
