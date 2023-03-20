@@ -9,7 +9,7 @@ function Martyr.onReveal(file, idx)
     local player = Card.getColor(file[idx])
     givePointsToPlayer(player, 1)
     moveToDeathZone(player, file, idx, true)
-    startTurn(file, Card.onEndTurn(file, idx))
+    startTurn(file, idx)
 end
 
 -- Source est la carte à l'origine de la mort

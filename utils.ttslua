@@ -209,6 +209,18 @@ function getCard(name, color)
     return getCardEliminated(name, color) or getCardDeck(name, color)
 end
 
+function getTopCards(deck, n)
+    cards = {}
+    for k, v in ipairs(deck.getObjects()) do
+        local card = Card.getScript(v.name)
+        if not card.isToken then
+            table.insert(cards, v.name)
+            if #cards == 3 then return cards end
+        end
+    end
+    return cards
+end
+
 
 -- Échange la position des deux cartes
 function swapCards(card1, card2)

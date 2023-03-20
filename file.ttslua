@@ -109,7 +109,7 @@ end
 
 function removeAllPoints(params)
     local i = params.i
-    if(points[file[i]] == nil) then return end
+    if points[file[i]] == nil then return end
     for _, p in pairs(points[file[i]]) do
         p.destruct()
     end

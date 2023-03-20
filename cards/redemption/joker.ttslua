@@ -5,11 +5,31 @@ Joker = {
 }
 
 function Joker.onReveal(file, idx)
-    giveAllPointsToPlayer(idx, Card.getColor(file[idx]))
-    Effect.manual_action(file, idx)
+    local color = Card.getColor(file[idx])
+    giveAllPointsToPlayer(idx, color)
+    -- joueur[color].deck.Container.Search(color, 3)
+    Effect.aux["JokerReplace"] = idx
+    Player[color].showOptionsDialog("Quelle carte ?", getTopCards(joueur[color].deck, 3), "", JokerReplace)
 end
 
 function Joker.onEndTurn(f, s)
     moveToDeathZone(Card.getColor(f[s]), f, s, true)
     return s
+end
+
+function JokerReplace(name, idx, color)
+    local card = getCard(name, color)
+    local i = Effect.aux["JokerReplace"]
+    local f = getFileTable()
+    if card then
+        local rotation = f[i].getRotation()
+        rotation.z = 180
+        card.setRotationSmooth(rotation, false, true)
+        local position = f[i].getPosition()
+        card.setPositionSmooth(position)
+        table.insert(f, i+1, card)
+        startTurn(f, Card.onEndTurn(f, i))
+    else
+        Effect.manual_action(f, i)
+    end
 end

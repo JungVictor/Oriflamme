@@ -37,7 +37,7 @@ function onLoad_init()
 
     -- sort_name() -- <- Pour initialiser les cartes avec leur nom
     REF = {getObjectFromGUID("f531bb"), getObjectFromGUID("d790ea"), getObjectFromGUID("fb074b"), getObjectFromGUID("be4b9c")}
-    local default_value = {false, false, false, true}
+    local default_value = {true, false, false, false}
     for e = 1, #EXT do
         ACCEPTED[e] = {}
         for i = 0, #EXT[e]-1 do
