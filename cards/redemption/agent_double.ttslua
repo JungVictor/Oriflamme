@@ -2,7 +2,9 @@ Agent_Double = {
     isCharacter = true,
     name = "Agent double",
     description = "Gagnez 1 PI pour chaque famille différente adjacente.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 3,
+    id = 1
 }
 
 -- Effet d'activation de la carte

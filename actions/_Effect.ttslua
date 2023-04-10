@@ -16,8 +16,8 @@ end
 function effect_clean_targets(f, ts)
     for i = 1, #f do
         f[i].hide_when_face_down = true
-        if f[i].getName() == Changeforme.name and f[i].memo != Changeforme.name then
-        else f[i].setName(f[i].memo) end
+        if f[i].getName() == Changeforme.name and Card.getMemoName(f[i].memo) != Changeforme.name then
+        else f[i].setName(Card.getMemoName(f[i].memo)) end
         f[i].clearButtons()
         f[i].highlightOff()
     end

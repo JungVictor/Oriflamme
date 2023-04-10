@@ -1,7 +1,9 @@
 Usurpation = {
     name = "Usurpation",
     description = "Éliminez une carte adjacente. Si c'est un personnage adverse, remplacez-le par le même personnage, révélé, parmi vos cartes écartées, défaussées ou éliminées.\nDéfaussez l'Usurpation.",
-    type = TYPE_INSTANT
+    type = TYPE_INSTANT,
+    ext = 2,
+    id = 11
 }
 
 function Usurpation.onReveal(file, idx)

@@ -2,7 +2,9 @@ Soldat = {
     isCharacter = true,
     name = "Soldat",
     description = "Éliminez une carte adjacente.",
-    type = TYPE_KILLER
+    type = TYPE_KILLER,
+    ext = 1,
+    id = 10
 }
 
 -- Effet d'activation de la carte

@@ -2,7 +2,9 @@ Infiltrateur = {
     isCharacter = true,
     name = "Infiltrateur",
     description = "Gagnez 1 PI, puis déplacez l'Infiltrateur n'importe où dans la File.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 3,
+    id = 5
 }
 
 infiltrateurs = {}

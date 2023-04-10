@@ -2,7 +2,9 @@ Paladine = {
     isCharacter = true,
     name = "Paladine",
     description = "Gagnez 1 PI. Tant qu'une carte de votre famille est révélée, ne peut pas être détruite. Tant qu'elle est en jeu, la Paladine compte comme un jeton Bénédiction pour votre famille uniquement.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 3,
+    id = 8
 }
 
 -- Effet d'activation de la carte

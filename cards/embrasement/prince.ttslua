@@ -8,13 +8,16 @@ Prince = {
     name = "Prince",
     description = "Lorsque vous révélez le Prince, placez le Jumeau de votre famille, révélé, dans la File.\n-----------\nGagnez 1 PI.\n-----------\nLorsque le Prince est éliminé, défaussez le Jumeau de votre famille, sauf s'il est recouvert.",
     isLinked = true,
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 2,
+    id = 9
 }
 
 function Prince.onReveal(f, s)
     giveAllPointsToPlayer(s, Card.getColor(f[s]))
     -- Ajoute le jumeau dans la file
-    local jumeau = getCard(Jumeau.name, Card.getColor(f[s]))
+    -- local jumeau = getCard(Jumeau.name, Card.getColor(f[s]))
+    local jumeau = create_card(Jumeau.name, Card.getColor(f[s]))
     if jumeau then
         local rotation = f[s].getRotation()
         rotation.z = 0
@@ -45,7 +48,9 @@ Jumeau = {
     description = "Gagnez 1 PI.\n-----------\nLorsque le Jumeau est éliminé, défaussez le Prince de votre famille, sauf s'il est recouvert.",
     isLinked = true,
     type = TYPE_OTHER,
-    isToken = true
+    isToken = true,
+    ext = 2,
+    id = 7
 }
 
 function Jumeau.onActivation(f, s)

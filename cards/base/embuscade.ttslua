@@ -1,7 +1,9 @@
 Embuscade = {
     name = "Embuscade",
     description = "Défaussez les PI présents sur l'Embuscade puis gagnez 1 PI. Défaussez l'Embuscade.\n---- OU ----\nSi l'Embuscade est éliminée par une carte adverse, défaussez la carte adverse et gagnez 4 PI.",
-    type = TYPE_ONDEATH
+    type = TYPE_ONDEATH,
+    ext = 1,
+    id = 6
 }
 
 function Embuscade.onReveal(file, idx)

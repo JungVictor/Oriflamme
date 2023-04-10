@@ -2,6 +2,8 @@ Infiltration = {
     name = "Infiltration",
     description = "Placez 1 PI sur chacune de vos cartes face cachée. Réservez l'Infiltration.\n[Lorsque vous éliminez une carte face cachée, gagnez 2 PI supplémentaires.]",
     type = TYPE_INSTANT,
+    ext = 4,
+    id = 5
 }
 
 function Infiltration.onReveal(f, s)

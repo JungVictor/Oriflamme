@@ -1,0 +1,81 @@
+function random_playable_cards(n, forbidden)
+    local indices = {}
+    local cards = {}
+    local idx = 0
+
+    for e=1, #EXT do
+        for i=1, #EXT[e] do
+            idx = idx + 1
+            if find(forbidden, EXT[e][i]) < 0 then
+                table.insert(indices, idx)
+            end
+        end
+    end
+    for e=1, n do
+        local i = math.random(#indices-e+1)
+        local tmp = indices[i]
+        indices[i] = indices[#indices-e+1]
+        indices[#indices] = tmp
+        table.insert(cards, get_card_by_number(tmp))
+    end
+    return cards
+end
+
+function get_card_by_number(n)
+    for e=1, #EXT do
+        if n > #EXT[e] then n = n - #EXT[e]
+        else return EXT[e][n] end
+    end
+    return nil
+end
+
+function create_card(name, color)
+    local card = Card.getScript(name)
+    local ext = card.ext
+    local id = card.id
+
+    local deck = create_deck(ext, color)
+    local card = deck.takeObject({index = id-1})
+    deck.destruct()
+
+    card.setName(name)
+    card.addTag(color)
+    card.memo = name
+    return card
+end
+
+function create_deck(ext, color)
+    local front_img = Resources["CardsImages"][color][ext]
+    local back_img = Resources["CardsBack"][color]
+    local params = {
+        face = front_img,
+        back = back_img,
+        width = EXT_SIZE[ext][1],
+        height = EXT_SIZE[ext][2],
+        number = EXT_SIZE[ext][3]
+    }
+
+    local deck = spawnObject({
+        type              = "DeckCustom",
+        scale             = CARD_SCALE,
+    })
+    deck.setCustomObject(params)
+    return deck
+end
+
+function create_cards(names, color)
+    exts = {}
+    for i, name in ipairs(names) do
+        local card = Card.getScript(name)
+        local ext = card.ext
+        local id = card.id
+
+        if not exts[ext] then exts[ext] = create_deck(ext, color) end
+
+        local card = exts[ext].takeObject({index=id})
+        card.setName(name)
+        card.addTag(color)
+        card.memo = name
+    end
+    for _, deck in ipairs(exts) do deck.destruct() end
+end

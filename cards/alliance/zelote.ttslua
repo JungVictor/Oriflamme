@@ -2,7 +2,9 @@ Zelote = {
     isCharacter = true,
     name = "Oracle",
     description = "Gagnez 1 PI. Si vous n'avez aucune autre carte révélée dans la file, gagnez 1 PI supplémentaire.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 4,
+    id = 10
 }
 
 function Zelote.onActivation(f, s)

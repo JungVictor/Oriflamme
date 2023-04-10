@@ -9,6 +9,20 @@ TYPE_OTHER = 5
 Card = {}
 Corrupted = {}
 
+ID_TO_CARD = {}
+
+function Card.linkID(id, name, color)
+    ID_TO_CARD[id] = {name, color}
+end
+
+function Card.getMemoName(ID)
+    return ID_TO_CARD[ID][1]
+end
+
+function Card.setMemoName(ID, name)
+    ID_TO_CARD[ID][1] = name
+end
+
 -- Get the script corresponding to the given card name
 function Card.getScript(name)
     if NAME_TO_SCRIPT[name] != nil then
@@ -21,14 +35,17 @@ end
       GETTERS
 -----------------]]
 
+-- Check si la carte est condamnée
 function Card.isCondemned(f, i)
     return zoneFile.call("isCondemned", {card=f[i]})
 end
 
+-- Check si la carte est en réserve
 function Card.isReserved(card)
     return zoneFile.call("isReserved", {card=card, color=Card.getColor(card)})
 end
 
+-- Check si la carte effectue potentiellement plusieurs élimination à la fois
 function Card.isMultishot(f, i)
     local card = Card.getScript(f[i].getName())
     if not card.isMultishot then return false end
@@ -42,8 +59,14 @@ function Card.condition(f, i)
     return card.condition(f, i)
 end
 
+-- Retourne les points sur une carte
 function Card.getPoints(card)
     return zoneFile.call("pointsOnCard", {card=card})
+end
+
+-- Retourne l'extension d'une carte
+function Card.getExtension(card)
+    return EXT_REVERSE[card.getName()]
 end
 
 -- Retourne la couleur d'une carte
@@ -51,11 +74,12 @@ function Card.getColor(card)
     return card.getTags()[1]
 end
 
+-- Retourne la couleur de base d'une carte (ignore la corruption)
 function Card.getBaseColor(card)
-    if Corrupted[card] then return Corrupted[card] end
-    return Card.getColor(card)
+    return ID_TO_CARD[card.memo][2]
 end
 
+-- Retourne si la carte est un token
 function Card.isToken(card)
     local card = Card.getScript(card.getName())
     if not card.isToken then return false end
@@ -67,31 +91,36 @@ function Card.isRevealed(f, i)
     return f[i].getRotation().z < 90 or f[i].getRotation().z > 270
 end
 
+-- Check si la carte est recouverte dans la file
 function Card.isCovered(f, i)
     if i <= 1 or i > #f then return false end
     return math.abs(f[i].getPosition().x - f[i-1].getPosition().x) < 1.0
 end
 
+-- Check si la carte est une carte personnage
 function Card.isCharacter(c)
     local card = Card.getScript(c.getName())
     if not card.isCharacter then return false end
     return card.isCharacter
 end
 
+-- Check si la carte est liée à une autre carte (ex : Prince & Jumeau)
 function Card.isLinked(f, i)
     local card = Card.getScript(f[i].getName())
     if not card.isLinked then return false end
     return card.isLinked
 end
 
+-- Check si la carte active un effet à sa mort
 function Card.isDeathEffect(f, s)
     local card = Card.getScript(f[s].getName())
-    if not card.isMorphling then else card = Card.getScript(f[s].memo) end
+    if not card.isMorphling then else card = Card.getScript(Card.getMemoName(f[s].memo)) end
 
     if not card.isDeathEffect then return false end
     return card.isDeathEffect()
 end
 
+-- Check si la carte est protégée (ne peut pas être détruite)
 function Card.isProtected(f, s)
     if Effect.aux["protect"] == f[s] then return true end
     if f[s].getName() == Balrog.name then return true end
@@ -109,10 +138,12 @@ end
       SETTERS
 -----------------]]
 
+-- Retire la condamnation d'une carte
 function Card.removeCondemnation(card)
     zoneFile.call("removeCondemnation", {card=card})
 end
 
+-- Change la couleur de la carte à sa couleur de base
 function Card.restoreColor(card)
     if Corrupted[card] then
         local corr_color = Card.getColor(card)
@@ -122,6 +153,7 @@ function Card.restoreColor(card)
     end
 end
 
+-- Ajoute un point sur une carte
 function Card.stack(card, p)
     local params={}
     local xOff = {1, -1}
@@ -137,26 +169,29 @@ function Card.stack(card, p)
     end
 end
 
+-- Ajoute un jeton sur une carte
 function Card.addPoint(card, point)
     zoneFile.call("addPointToCard", {card=card, point=point})
 end
 
+-- Retire n points d'une carte ou tous si n n'est pas spécifié
 function Card.removePoints(i, n)
     if not n then return zoneFile.call("removeAllPoints", {i=i}) end
     return zoneFile.call("removePoints", {i=i, n=n})
 end
 
+-- Ajoute une bénédiction sur une carte
 function Card.addBlessing(card)
     zoneFile.call("addBlessingTo", {card=card})
 end
 
+-- Retire une bénédiction d'une carte
 function Card.removeBlessing(card)
     Effect.aux["remove_protection"] = card
     zoneFile.call("removeBlessing", {card=card})
 end
 
-
--- Retourne la couleur d'une carte
+-- Change la couleur d'une carte
 function Card.setColor(card, color)
     Corrupted[card] = Card.getColor(card)
     card.removeTag(Card.getColor(card))
@@ -167,23 +202,27 @@ end
       ACTIONS
 -----------------]]
 
+-- Active l'effet lorsque la carte est attaquée
 -- s est l'attaquant, t est la carte
 function Card.onAttack(f, s, t)
     local card = Card.getScript(f[t].getName())
     if card.onAttack then card.onAttack(f, s, t) end
 end
 
+-- Active l'effet de choix d'une carte
 function Card.choice(f, s, i)
     local card = Card.getScript(f[s].getName())
     card.choice(f, s, i)
 end
 
+-- Active l'effet d'élimination d'une carte
 function Card.eliminate(f, s, t, n)
     local card = Card.getScript(f[s].getName())
     if not card.eliminate then eliminate(f, s, t, n)
     else card.eliminate(f, s, t) end
 end
 
+-- Corrompt une carte
 function Card.corrupt(f, s, t)
     local color = Card.getColor(f[s])
     local corr = getCorruption(color)
@@ -194,10 +233,12 @@ function Card.corrupt(f, s, t)
     Card.setColor(f[t], color)
 end
 
+-- Condamne une carte
 function Card.condemn(f, t)
     zoneFile.call("addCondemnationTo", {card=f[t]})
 end
 
+-- Effet à la révélation de la carte
 function Card.onReveal(f, s)
     local card = Card.getScript(f[s].getName())
     if not card.onReveal then
@@ -208,6 +249,7 @@ function Card.onReveal(f, s)
     end
 end
 
+-- Effet à l'activation de la carte
 function Card.onActivation(f, s)
     local card = Card.getScript(f[s].getName())
     if not card.onActivation then else
@@ -215,17 +257,22 @@ function Card.onActivation(f, s)
     end
 end
 
+-- Applique le script de la carte t avec comme référence la carte s
+-- Changeforme
 function Card.onMorph(f, s, t)
-    f[s].memo = f[t].getName()
+    Card.setMemoName(f[s].memo, f[t].getName())
+    -- f[s].memo = f[t].getName()
     Card.getScript(f[t].getName()).onActivation(f, s)
 end
 
+-- Active l'effet lors de la mort d'une carte
 function Card.onDeath(f, s, t)
     local card = Card.getScript(f[t].getName())
     if not card.onDeath then return Undefined.onDeath(f, s, t) end
     return card.onDeath(f, s, t)
 end
 
+-- Active l'effet d'une carte s lorsqu'elle élimine une autre carte t
 function Card.onElimination(f, s, t)
     Event.elimination(f, s, t, getReserveTable())
     local card = Card.getScript(f[s].getName())
@@ -233,6 +280,8 @@ function Card.onElimination(f, s, t)
     else return card.onElimination(f, s, t) end
 end
 
+-- Active l'effet de fin de tour d'une carte
+-- Donne l'index de la carte suivante
 function Card.onEndTurn(f, s)
     local card = Card.getScript(f[s].getName())
     if not card.onEndTurn then return s + 1 end

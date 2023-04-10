@@ -2,7 +2,9 @@ Croise = {
     isCharacter = true,
     name = "Croisé",
     description = "Gagnez 1 PI. Si un jeton Bénédiction est en jeu, gagnez 2 PI supplémentaires.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 3,
+    id = 3
 }
 
 -- Effet d'activation de la carte

@@ -2,6 +2,8 @@ Vol_a_la_tire = {
     name = "Vol à la tire",
     description = "Volez 1 PI sur une carte face cachée pour chaque PI présent sur Vol à la tire. Défaussez Vol à la tire.\n---- OU ----\nSi un joueur élimine cette carte, il gagne les PI présents sur celle-ci.",
     type = TYPE_STACK,
+    ext = 3,
+    id = 12
 }
 
 function Vol_a_la_tire.onReveal(file, idx)

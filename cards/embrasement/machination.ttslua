@@ -1,7 +1,9 @@
 Machination = {
     name = "Machination",
     description = "Défaussez la Machination.\nActivez la capacité de n'importe quel personnage révélé de votre famille. Chaque PI présent sur la Machination peut être soit gagné, soit défaussé pour répéter l'effet ci-dessus.",
-    type = TYPE_STACK
+    type = TYPE_STACK,
+    ext = 2,
+    id = 8
 }
 
 function Machination.onReveal(file, idx)

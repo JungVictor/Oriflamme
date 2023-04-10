@@ -1,7 +1,9 @@
 Corruption = {
     name = "Corruption",
     description = "Placez un jeton Corruption de votre famille sur n'importe quel personnage révélé. Ce personnage est dorénavant de votre famille.\nDéfaussez la Corruption.",
-    type = TYPE_INSTANT
+    type = TYPE_INSTANT,
+    ext = 2,
+    id = 2
 }
 
 function Corruption.onReveal(file, idx)

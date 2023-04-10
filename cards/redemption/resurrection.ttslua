@@ -1,7 +1,9 @@
 Resurrection = {
     name = "Résurrection",
     description = "Gagnez 1 PI. Échangez cette carte avec un personnage éliminé de votre famille.",
-    type = TYPE_INSTANT
+    type = TYPE_INSTANT,
+    ext = 3,
+    id = 11
 }
 
 function Resurrection.onReveal(file, idx)

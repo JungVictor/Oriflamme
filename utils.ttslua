@@ -8,6 +8,7 @@ end
 
 -- Trouve l'index de la carte dans la liste donnée
 function find(tbl, obj)
+    if tbl == nil then return -1 end
     for i=1, #tbl do if tbl[i]==obj then return i end end
     return -1
 end

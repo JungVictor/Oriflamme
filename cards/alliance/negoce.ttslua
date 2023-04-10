@@ -2,6 +2,8 @@ Negoce = {
     name = "Négoce",
     description = "Réservez le Négoce en conservant les PI dessus.\n[Au début de chaque tour, si vous avez au moins une carte dans la File, gagnez autant de PI que ceux présents sur le Négoce.]",
     type = TYPE_STACK,
+    ext = 4,
+    id = 9
 }
 
 function Negoce.onReveal(f, s)

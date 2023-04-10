@@ -2,7 +2,9 @@ Deserteur = {
     isCharacter = true,
     name = "Courtisane",
     description = "Éliminez une carte adjacente. Si c'est un personnage gagnez 1 PI supplémentaire. Puis, si cette carte n'est pas adjacente à un Personnage révélé, défaussez-la.",
-    type = TYPE_KILLER
+    type = TYPE_KILLER,
+    ext = 4,
+    id = 1
 }
 
 

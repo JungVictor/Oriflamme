@@ -1,7 +1,9 @@
 Assassinat = {
     name = "Assassinat",
     description = "Éliminez une carte n'importe où dans la FIle. Défaussez l'Assassinat.",
-    type = TYPE_INSTANT
+    type = TYPE_INSTANT,
+    ext = 1,
+    id = 2
 }
 
 function Assassinat.onReveal(file, idx)

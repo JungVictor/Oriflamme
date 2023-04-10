@@ -2,7 +2,9 @@ Apothicaire = {
     isCharacter = true,
     name = "Apothicaire",
     description = "Éliminez une carte adjacente à une autre carte de votre famille.",
-    type = TYPE_KILLER
+    type = TYPE_KILLER,
+    ext = 2,
+    id = 1
 }
 
 -- Effet d'activation de la carte

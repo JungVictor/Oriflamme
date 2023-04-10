@@ -1,7 +1,9 @@
 Complot = {
     name = "Complot",
     description = "Gagnez le double de PI présents sur le Complot. Défaussez le Complot.",
-    type = TYPE_STACK
+    type = TYPE_STACK,
+    ext = 1,
+    id = 4
 }
 
 function Complot.onReveal(file, idx)

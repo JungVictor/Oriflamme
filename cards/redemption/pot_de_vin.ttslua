@@ -1,7 +1,9 @@
 Pot_de_vin = {
     name = "Pot-de-vin",
     description = "Payez 1 PI à un joueur puis regardez une de ces cartes faces cachées.\n---- OU ----\nRécupérez 1 PI.",
-    type = TYPE_STACK
+    type = TYPE_STACK,
+    ext = 3,
+    id = 9
 }
 
 function Pot_de_vin.onReveal(file, idx)

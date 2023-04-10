@@ -2,7 +2,9 @@ Intriguante = {
     isCharacter = true,
     name = "Intrigante",
     description = "Si cette carte est adjacente à une pile de cartes, défaussez là ; sinon gagnez 2 PI.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 2,
+    id = 6
 }
 
 function Intriguante.onActivation(f, s)

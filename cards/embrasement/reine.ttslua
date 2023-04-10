@@ -2,7 +2,9 @@ Reine = {
     isCharacter = true,
     name = "Reine",
     description = "Gagnez 2 PI.\n-----------\nSi un joueur adverse élimine la Reine, il gagne 1 PI supplémentaire.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 2,
+    id = 10
 }
 
 function Reine.onActivation(file, idx)

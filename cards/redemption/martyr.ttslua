@@ -1,7 +1,9 @@
 Martyr = {
     name = "Martyr",
     description = "Défaussez les PI présents sur le Martyr puis gagnez 1 PI. Défaussez le Martyr.\n---- OU ----\nSi le Martyr est éliminé par une carte adverse, gagnez le double de PI présents sur le Martyr.",
-    type = TYPE_ONDEATH
+    type = TYPE_ONDEATH,
+    ext = 3,
+    id = 7
 }
 
 function Martyr.onReveal(file, idx)

@@ -2,7 +2,9 @@ Diplomate = {
     isCharacter = true,
     name = "Diplomate",
     description = "Gagnez 1 PI. Placez 2 PI sur un autre Diplomate révélé.\n---- OU ----\nGagnez tous les PI présents sur cette carte et défaussez-la.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 4,
+    id = 2
 }
 
 

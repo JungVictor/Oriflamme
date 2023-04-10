@@ -26,7 +26,6 @@ function sort_name()
 end
 
 function sort_name_tag(deck, key, e)
-
     local objets = deck.getObjects()
 
     for i, obj in pairs(objets) do
@@ -34,9 +33,9 @@ function sort_name_tag(deck, key, e)
         local card = deck.takeObject({index=#objets-1})
         card.setName(name)
         card.addTag(key)
-        card.memo = name
         deck.putObject(card)
         card.destruct()
+        GLOBAL_CARD_ID_COUNTER = GLOBAL_CARD_ID_COUNTER + 1
     end
 
 end

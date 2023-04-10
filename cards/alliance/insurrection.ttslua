@@ -1,7 +1,9 @@
 Insurrection = {
     name = "Insurrection",
     description = "Défaussez 1 PI présent sur cette carte pour la révéler. Éliminez les deux cartes adjacentes puis retournez cette carte face cachée.",
-    type = TYPE_INSTANT
+    type = TYPE_INSTANT,
+    ext = 4,
+    id = 7
 }
 
 function Insurrection.condition(f, i)

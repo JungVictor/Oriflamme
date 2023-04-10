@@ -1,7 +1,9 @@
 Decret_Royal = {
     name = "Décret royal",
     description = "Déplacez une carte n'importe où dans la File sauf sur une autre carte. Défaussez le Décret royal.",
-    type = TYPE_INSTANT
+    type = TYPE_INSTANT,
+    ext = 1,
+    id = 5
 }
 
 function Decret_Royal.onReveal(file, idx)

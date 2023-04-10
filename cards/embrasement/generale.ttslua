@@ -2,7 +2,9 @@ Generale = {
     isCharacter = true,
     name = "Générale",
     description = "Gagnez 1 PI et 1 PI supplémentaire par carte de votre famille en première ou en dernière position dans la File.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 2,
+    id = 12
 }
 
 -- Effet d'activation de la carte

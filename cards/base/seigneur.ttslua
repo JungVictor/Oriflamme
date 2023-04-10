@@ -2,7 +2,9 @@ Seigneur = {
     isCharacter = true,
     name = "Seigneur",
     description = "Gagnez 1 PI et 1 PI supplémentaire par carte adjacente de votre famille.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 1,
+    id = 9
 }
 
 -- Effet d'activation de la carte

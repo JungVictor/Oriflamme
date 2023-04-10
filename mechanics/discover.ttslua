@@ -1,0 +1,56 @@
+function show_card(card, color, id)
+    -- Load the image file
+    local imageFile = Resources["CardsImages"][color][card.ext]
+    local width = EXT_SIZE[card.ext][1]
+    local height = EXT_SIZE[card.ext][2]
+    local x = (card.id-1) % width
+    local y = math.floor((card.id-1) / width)
+    x = (x+0.5) * -500
+    y = (y+0.5) * 919
+    local parameters = {
+        image=imageFile,
+        position=x.." "..y,
+        width=500*width,
+        height=919*height
+    }
+    UI.setAttributes("discover"..id, parameters)
+    UI.show("mask"..id)
+end
+
+function show_cards(cards, color)
+    UI.setAttribute("ToggleDiscover", "visibility", color)
+    UI.show("ToggleDiscover")
+    UI.show("discover_layout")
+    UI.setAttribute("discover_layout", "width", 500+510*(#cards-1))
+    for i=1, #cards do
+        show_card(cards[i], color, i)
+    end
+end
+
+function toggle_discover(player, value, id)
+    if UI.getAttribute("discover_layout", "active") == "true"
+    then UI.hide("discover_layout")
+    else UI.show("discover_layout") end
+end
+
+function discover(color, value, id)
+    if id == "mask1" then return call_discover_function(Effect.aux["Discover"][1], 1, Effect.aux["DiscoverColor"]) end
+    if id == "mask2" then return call_discover_function(Effect.aux["Discover"][2], 2, Effect.aux["DiscoverColor"]) end
+    return call_discover_function(Effect.aux["Discover"][3], 3, Effect.aux["DiscoverColor"])
+end
+
+function call_discover_function(name, idx, color)
+    return Global.call(Effect.aux["DiscoverFunction"], {name, idx, color})
+end
+
+function hide_card(id)
+    UI.hide("mask"..id)
+end
+
+function hide_all_cards()
+    UI.hide("discover_layout")
+    UI.hide("ToggleDiscover")
+    UI.hide("mask1")
+    UI.hide("mask2")
+    UI.hide("mask3")
+end

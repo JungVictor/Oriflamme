@@ -1,7 +1,9 @@
 Extorsion = {
     name = "Extorsion",
     description = "Défaussez les PI présents sur l'Extorsion et gagnez 1 PI. Défaussez l'Extorsion.\n---- OU ----\nSi l'Extorsion est éliminée par une carte adverse, gagnez 2 PI par carte de ce joueur dans la File, puis ce dernier défausse 1 PI sur chacune de ses cartes face cachées.",
-    type = TYPE_ONDEATH
+    type = TYPE_ONDEATH,
+    ext = 4,
+    id = 3
 }
 
 function Extorsion.onReveal(file, idx)

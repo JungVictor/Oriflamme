@@ -2,7 +2,9 @@ Fossoyeur = {
     isCharacter = true,
     name = "Fossoyeur",
     description = "Lorsqu'une carte est éliminée, placez 1 PI sur le Fossoyeur. Récupérez les PI présents sur le Fossoyeur.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 3,
+    id = 4
 }
 
 -- Effet d'activation de la carte

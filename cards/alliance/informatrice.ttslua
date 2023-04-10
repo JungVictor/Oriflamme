@@ -3,6 +3,8 @@ Informatrice = {
     name = "Informatrice",
     description = "Gagnez autant de PI que de PI présents sur les cartes adverses face cachée adjacentes.\n---- OU ----\nÉchangez cette carte avec une carte face cachée de votre main.",
     type = TYPE_OTHER,
+    ext = 4,
+    id = 6
 }
 
 function Informatrice.onActivation(f, s)

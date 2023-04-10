@@ -2,7 +2,9 @@ Archer = {
     isCharacter = true,
     name = "Archère",
     description = "Éliminez la première ou la dernière carte de la File.",
-    type = TYPE_KILLER
+    type = TYPE_KILLER,
+    ext = 1,
+    id = 1
 }
 
 -- Effet d'activation de la carte

@@ -2,7 +2,9 @@ Heritier = {
     isCharacter = true,
     name = "Héritier",
     description = "S'il n'y a pas d'autre carte révélée du même nom, gagnez 2 PI.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 1,
+    id = 8
 }
 
 -- Effet d'activation de la carte

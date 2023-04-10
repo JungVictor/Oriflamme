@@ -2,7 +2,9 @@ Imperatrice = {
     isCharacter = true,
     name = "Impératrice",
     description = "Gagnez 2 PI. Placez 1 PI sur une carte adverse face cachée.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 4,
+    id = 4
 }
 
 function Imperatrice.onActivation(file, idx)

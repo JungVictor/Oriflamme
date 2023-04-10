@@ -2,7 +2,9 @@ Espion = {
     isCharacter = true,
     name = "Espion",
     description = "Volez 1 PI à un joueur dont l'une des cartes est adjacente.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 1,
+    id = 7
 }
 
 -- Effet d'activation de la carte

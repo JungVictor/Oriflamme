@@ -1,7 +1,9 @@
 Joker = {
     name = "Joker",
     description = "Lorsque le Joker est révélé, choisissez une carte parmi trois cartes aléatoires de votre famille écartées du jeu. Placez une carte de votre main face cachée à côté du Joker, puis défaussez le Joker.",
-    type = TYPE_INSTANT
+    type = TYPE_INSTANT,
+    ext = 3,
+    id = 6
 }
 
 function Joker.onReveal(file, idx)
@@ -9,7 +11,12 @@ function Joker.onReveal(file, idx)
     giveAllPointsToPlayer(idx, color)
     -- joueur[color].deck.Container.Search(color, 3)
     Effect.aux["JokerReplace"] = idx
-    Player[color].showOptionsDialog("Quelle carte ?", getTopCards(joueur[color].deck, 3), "", JokerReplace)
+    local cards = random_playable_cards(3, joueur[color].starting_hand)
+    show_cards(cards, color)
+    for i=1,#cards do cards[i] = cards[i].name end
+    Effect.aux["Discover"] = {cards[1], cards[2], cards[3]}
+    Effect.aux["DiscoverFunction"] = "JokerReplace"
+    Effect.aux["DiscoverColor"] = color
 end
 
 function Joker.onEndTurn(f, s)
@@ -17,14 +24,19 @@ function Joker.onEndTurn(f, s)
     return s
 end
 
-function JokerReplace(name, idx, color)
-    local card = getCard(name, color)
+function JokerReplace(args)
+    hide_all_cards()
+    local name = args[1]
+    local idx = args[2]
+    local color = args[3]
+
+    local card = create_card(name, color)
     local i = Effect.aux["JokerReplace"]
     local f = getFileTable()
     if card then
         local rotation = f[i].getRotation()
         rotation.z = 180
-        card.setRotationSmooth(rotation, false, true)
+        card.setRotation(rotation, false, true)
         local position = f[i].getPosition()
         card.setPositionSmooth(position)
         table.insert(f, i+1, card)

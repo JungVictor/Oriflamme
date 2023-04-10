@@ -3,7 +3,9 @@ Changeforme = {
     isMorphling = true,
     name = "Changeforme",
     description = "Copiez la capacité d'un personnage révélé adjacent.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 1,
+    id = 3
 }
 
 -- Effet d'activation de la carte

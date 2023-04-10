@@ -1,0 +1,20 @@
+Kali = {
+    isCharacter = false,
+    name = "Kali",
+    description = "Cette carte ne peut être révélée que lorsqu'elle est la cible d'une élimination. Cette carte ne peut pas être détruite.\n ------\nÉliminez une carte n'importe où dans la File.",
+    type = TYPE_KILLER,
+    counter = 0
+}
+
+-- Effet d'activation de la carte
+function Kali.onActivation(f, s)
+    Effect.elimination(f, s, getAllUncovered(f, s))
+end
+
+function Kali.onElimination(f, s, t)
+    givePointsToPlayer(Card.getColor(f[s]), 1)
+end
+
+function Kali.onEventElimination(f, s, t, i)
+    Kali.counter = Kali.counter + 1
+end

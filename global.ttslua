@@ -9,7 +9,8 @@ function onLoad()
             zone_jeu = getObjectFromGUID('9d7c7b'),
             hand = getObjectFromGUID("2a750c"),
             corruption = getObjectFromGUID("f25912"),
-            points = getObjectFromGUID("376147")
+            points = getObjectFromGUID("376147"),
+            starting_hand = {}
         },
         ["Red"] = {
             deck = getObjectFromGUID('b4ad7a'),
@@ -18,7 +19,8 @@ function onLoad()
             zone_jeu = getObjectFromGUID('ea2f84'),
             hand = getObjectFromGUID("ca1ab6"),
             corruption = getObjectFromGUID("b88f8b"),
-            points = getObjectFromGUID("1fb6ac")
+            points = getObjectFromGUID("1fb6ac"),
+            starting_hand = {}
         },
         ["Green"] = {
             deck = getObjectFromGUID('fd1c68'),
@@ -27,7 +29,8 @@ function onLoad()
             zone_jeu = getObjectFromGUID('f42e47'),
             hand = getObjectFromGUID("2740bc"),
             corruption = getObjectFromGUID("0613c7"),
-            points = getObjectFromGUID("2f06eb")
+            points = getObjectFromGUID("2f06eb"),
+            starting_hand = {}
         },
         ["Blue"] = {
             deck = getObjectFromGUID('ec7c57'),
@@ -36,7 +39,8 @@ function onLoad()
             zone_jeu = getObjectFromGUID('580f3a'),
             hand = getObjectFromGUID("c99abe"),
             corruption = getObjectFromGUID("a50a4f"),
-            points = getObjectFromGUID("f99cf2")
+            points = getObjectFromGUID("f99cf2"),
+            starting_hand = {}
         },
         ["Yellow"] = {
             deck = getObjectFromGUID('a8bc2c'),
@@ -45,10 +49,12 @@ function onLoad()
             zone_jeu = getObjectFromGUID('880742'),
             hand = getObjectFromGUID("2628a6"),
             corruption = getObjectFromGUID("c98613"),
-            points = getObjectFromGUID("9a6ac6")
+            points = getObjectFromGUID("9a6ac6"),
+            starting_hand = {}
         },
     }
 
+    CARD_SCALE = joueur["White"].deck.getScale()
     premier_joueur = getObjectFromGUID('85fbf4')
     sens = getObjectFromGUID('a229f8')
     bouton_setup =  getObjectFromGUID('308530')

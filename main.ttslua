@@ -1,5 +1,6 @@
 #include utils
 #include actions/_actions
+#include mechanics/_mechanics
 
 EliminatedCards = {
     ["White"] = {},
@@ -9,14 +10,71 @@ EliminatedCards = {
     ["Green"] = {}
 }
 
+Resources = {
+    ["CardsBack"] = {
+        ["White"] = "http://cloud-3.steamusercontent.com/ugc/1651096442108582590/7119E93B5101C3DEEA2BB84A8AD694CAF9A0EE8A/",
+        ["Red"] = "",
+        ["Blue"] = "",
+        ["Yellow"] = "",
+        ["Green"] = "",
+    },
+    ["CardsImages"] = {
+        ["White"] = {
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379585823/91DBE7C8D077F129D69B9B47007F3EF3066E0D93/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880579003259294/2E363D794DFAAB0659F1ACFCA93874A09EC765BD/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379611031/CD316461EA56F0CB7A3D1D8A5416BFB48ED11F8E/",
+            "http://cloud-3.steamusercontent.com/ugc/1975421824214407818/8773E35AD0CCF0BA575CA3724C0B5ACF24DE8432/",
+        },
+        ["Red"] = {
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379587054/48EBE1721A3C8D800FB7C83FF9ADC9814AEF40BA/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880579003265873/48E88F61B21521238A9397EDCB4ACB975A790A9E/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379612554/AA383C79D5C78DE4803718FB1A11C5D0556D4D97/",
+            "http://cloud-3.steamusercontent.com/ugc/1975421824214409218/D91562640EFB3741041DC37106E58B0502E01330/",
+        },
+        ["Blue"] = {
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379559628/DC497272243A6437C86406ADF3FF14B202345EC4/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880579003264419/894CB957DEB32B7036F86E3E76855367D4D0D3B6/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379564043/80C223350E2F948075706E71E9F15DADF2FC06E0/",
+            "http://cloud-3.steamusercontent.com/ugc/1975421824214412242/168D36382218FC4BCB06509A59326A1F689674CA/",
+        },
+        ["Yellow"] = {
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379584522/FA8703680EE6B2A1987F85F99BB6FA7379886738/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880579003263566/A5606740099C667B2545A8443837EE6898AECD9B/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379609558/98BB664C53C5A7009BE1F53A0FD2D32736A48943/",
+            "http://cloud-3.steamusercontent.com/ugc/1975421824214410160/113C718E96C6D878AD62E30A31FADB1D22B3AFBE/",
+        },
+        ["Green"] = {
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379580096/95D92D84B70A7090A893FFD4A81BC855C92CBAD2/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880579003265266/D18F6087B2BE9B296A74ABAEA583C64CB15426F9/",
+            "http://cloud-3.steamusercontent.com/ugc/1925880224379608456/3F0BDB7F467636EB2BD84D9584044ABF2DB302B1/",
+            "http://cloud-3.steamusercontent.com/ugc/1975421824214411109/361036DF40FE7044B971150D610AC17D4A018852/",
+        }
+    }
+}
+
+EXT_SIZE = {
+    {5,2,10},
+    {6,2,12},
+    {6,2,12},
+    {5,2,10}
+}
+
+-- Carte -> Extension
+EXT_REVERSE = {}
+
+-- Extension -> Cartes
 EXT = {
+    -- [1] Base
     { Archer, Assassinat, Changeforme, Complot, Decret_Royal,
       Embuscade, Espion, Heritier, Seigneur, Soldat },
+    -- [2] Embrasement
     { Apothicaire, Corruption, Coupe_Jarret, Guet_apens, Machination,
       Prince, Usurpation, Reine, Felon, Intriguante, Generale },
+    -- [3] Rédemption (custom)
     { Agent_Double, Croise, Fossoyeur, Infiltrateur, Joker, Arbaletrier,
       Martyr, Pot_de_vin, Pretre, Resurrection, Vol_a_la_tire,
       Paladine },
+    -- [4] Alliance
     { Deserteur, Diplomate, Extorsion, Imperatrice, Infiltration,
       Informatrice, Insurrection, Magistrat, Negoce, Zelote }
 }
@@ -26,7 +84,7 @@ TOKENS = { Jumeau }
 NAME_TO_SCRIPT = {}
 ACCEPTED = {}
 
--- #include sort_name
+--#include sort_name
 function onLoad_init()
 
     -- Place le décors (la chambre)
@@ -35,13 +93,14 @@ function onLoad_init()
     room.setRotation(vector(0, 0, 0))
     room.interactable = false
 
-    -- sort_name() -- <- Pour initialiser les cartes avec leur nom
+    --sort_name() -- <- Pour initialiser les cartes avec leur nom
     REF = {getObjectFromGUID("f531bb"), getObjectFromGUID("d790ea"), getObjectFromGUID("fb074b"), getObjectFromGUID("be4b9c")}
-    local default_value = {true, false, false, false}
+    local default_value = {false, true, false, false}
     for e = 1, #EXT do
         ACCEPTED[e] = {}
         for i = 0, #EXT[e]-1 do
             ACCEPTED[e][i+1] = default_value[e]
+            EXT_REVERSE[EXT[e][i+1].name] = e
             if REF[e] then
             REF[e].createButton(_create_toggle(EXT[e][i+1], i+1, i % 3,  math.floor(i / 3), REF, e, default_value[e]))
             end
@@ -141,36 +200,48 @@ function generateDeck(piles)
     return filtered
 end
 
+
+GLOBAL_CARD_ID_COUNTER = 1
 function distribution(joueur, player_colors)
     local piles = generatePiles()
     local ACCEPTED_CARDS = generateDeck(piles)
-    local tokens = {}
     for value, key in pairs(player_colors) do
-        tokens[key] = {}
         local deck = joueur[key].deck
         local objets = deck.getObjects()
         local destructed = 0
         for i, obj in pairs(objets) do
             local card = deck.takeObject({index=#objets-destructed-1})
 
-            if has_value(ACCEPTED_CARDS, card.getName()) then deck.putObject(card)
+            if has_value(ACCEPTED_CARDS, card.getName()) then
+                GLOBAL_CARD_ID_COUNTER = GLOBAL_CARD_ID_COUNTER + 1
+                card.memo = GLOBAL_CARD_ID_COUNTER
+                Card.linkID(card.memo, card.getName(), key)
+                deck.putObject(card)
             else destructed = destructed + 1 end
-            if Card.getScript(card.getName()).isToken then
-                table.insert(tokens[key], card)
-            else card.destruct() end
+            card.destruct()
         end
     end
 
     -- distribuer les cartes cachées
     for key, color in pairs(player_colors) do
         joueur[color].deck.shuffle()
-        joueur[color].deck.deal(7,color)
         influence_1.takeObject(getPointsPosition(color))
-        for _, token in pairs(tokens[color]) do
-            joueur[color].deck.putObject(token)
-            token.destruct()
+
+        local destructed = 0
+        local objets = joueur[color].deck.getObjects()
+
+        for i, obj in ipairs(objets) do
+            if #objets - destructed > 7 then
+                local card = joueur[color].deck.takeObject({index=#objets-destructed-1})
+                destructed = destructed + 1
+                card.destruct()
+            else
+                if not joueur[color].starting_hand then joueur[color].starting_hand = {} end
+                table.insert(joueur[color].starting_hand, Card.getScript(obj.name))
+            end
         end
-        -- joueur[color].deck.destroy()
+
+        joueur[color].deck.deal(7,color)
     end
 end
 

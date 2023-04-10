@@ -2,7 +2,9 @@ Felon = {
     name = "Félon",
     isCharacter = true,
     description = "Chaque joueur perd 1 PI pour chaque carte de sa famille adjacente au Félon.",
-    type = TYPE_OTHER
+    type = TYPE_OTHER,
+    ext = 2,
+    id = 4
 }
 
 function Felon.onActivation(f, s)

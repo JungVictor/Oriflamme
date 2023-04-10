@@ -1,7 +1,9 @@
 Guet_apens = {
     name = "Guet-apens",
     description = "Défaussez les PI présents sur le Guet-apens puis gagnez 1 PI. Défaussez le Guet-apens.\n---- OU ----\nSi le Guet-apens est éliminé par une carte adverse, défaussez la carte adverse et volez 3 PI au joueur adverse.",
-    type = TYPE_ONDEATH
+    type = TYPE_ONDEATH,
+    ext = 2,
+    id = 5
 }
 
 function Guet_apens.onReveal(file, idx)

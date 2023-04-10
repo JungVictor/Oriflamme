@@ -2,7 +2,9 @@ Magistrat = {
     isCharacter = true,
     name = "Bourreau",
     description = "Gagnez 1 PI. Placez un jeton Condamnation sur une carte n'importe où dans la File.\n---- OU ----\nÉliminez une carte avec un jeton Condamnation.",
-    type = TYPE_KILLER
+    type = TYPE_KILLER,
+    ext = 4,
+    id = 8
 }
 
 function Magistrat.onActivation(f, s)

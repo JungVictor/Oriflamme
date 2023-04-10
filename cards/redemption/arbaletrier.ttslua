@@ -2,7 +2,9 @@ Arbaletrier = {
     isCharacter = true,
     name = "Arbalétrier",
     description = "Éliminez une carte située à une distance de 2.",
-    type = TYPE_KILLER
+    type = TYPE_KILLER,
+    ext = 3,
+    id = 2
 }
 
 -- Effet d'activation de la carte

@@ -2,7 +2,9 @@ Coupe_Jarret = {
     isCharacter = true,
     name = "Coupe-Jarret",
     description = "Éliminez une carte adjacente ainsi que toutes les cartes adverses révélées du même nom. Si une seule carte est éliminée, ne gagnez pas le PI de l'élimination.",
-    type = TYPE_KILLER
+    type = TYPE_KILLER,
+    ext = 2,
+    id = 3
 }
 
 -- Effet d'activation de la carte
